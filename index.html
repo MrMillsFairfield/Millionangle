@@ -830,14 +830,16 @@
       { num: 15, amount: 1000000, formatted: "$1 MILLION", safe: true  }  // Top Prize
     ];
 
-    class QuestionGenerator {
+   class QuestionGenerator {
       static generate(levelIdx) {
         if (levelIdx <= 3) {
           return this.generateVerticallyOpposite(levelIdx);
         } else if (levelIdx <= 8) {
           return this.generateStraightLine(levelIdx);
-        } else {
+        } else if (levelIdx <= 12) {
           return this.generateAroundPoint(levelIdx);
+        } else {
+          return this.generateIntersectingLinesSixSectors(levelIdx);
         }
       }
 
@@ -928,7 +930,7 @@
 
       static generateAroundPoint(level) {
         const useRightAngle = (level >= 10);
-        const numSectors = (level >= 13) ? 5 : (level >= 11) ? 4 : 3;
+        const numSectors = (level >= 11) ? 4 : 3;
 
         let angles = [];
         if (numSectors === 3) {
@@ -940,7 +942,7 @@
             const b = Math.floor(Math.random() * 110) + 40;
             angles = [a, b, 360 - a - b];
           }
-        } else if (numSectors === 4) {
+        } else {
           if (useRightAngle) {
             const a = Math.floor(Math.random() * 60) + 30;
             const b = Math.floor(Math.random() * 60) + 30;
@@ -951,15 +953,8 @@
             const c = Math.floor(Math.random() * 70) + 30;
             angles = [a, b, c, 360 - a - b - c];
           }
-        } else {
-          const a = 90;
-          const b = Math.floor(Math.random() * 45) + 30;
-          const c = Math.floor(Math.random() * 45) + 30;
-          const d = Math.floor(Math.random() * 45) + 30;
-          angles = [a, b, c, d, 270 - b - c - d];
         }
 
-        // Randomly pick which sector is the missing target '?'
         const targetIdx = Math.floor(Math.random() * angles.length);
         
         let curr = Math.floor(Math.random() * 40) + 10;
@@ -984,6 +979,43 @@
         }
 
         const targetVal = angles[targetIdx];
+
+        return {
+          targetValue: targetVal,
+          rays: rays,
+          sectors: sectors,
+          choices: this.buildChoices(targetVal, [360 - targetVal, 180 - targetVal, targetVal + 15, 90])
+        };
+      }
+
+      // Special Generator for the Last Two Questions (Q14 & Q15)
+      static generateIntersectingLinesSixSectors(level) {
+        const beta = Math.floor(Math.random() * 20) + 40;
+        const tilt = Math.floor(Math.random() * 360);
+
+        const rem1 = 180 - beta;
+        const angleA = Math.floor(Math.random() * (rem1 - 20)) + 10;
+        const angleB = rem1 - angleA;
+
+        const rem2 = 180 - beta;
+        const angleC = Math.floor(Math.random() * (rem2 - 20)) + 10;
+        const targetVal = rem2 - angleC;
+
+        const sectors = [
+          { val: beta, isGiven: false, isTarget: false },       // 0: Unlabelled Vertically Opposite Angle
+          { val: angleA, isGiven: true, isTarget: false },      // 1: Labelled Angle 1
+          { val: angleB, isGiven: true, isTarget: false },      // 2: Labelled Angle 2
+          { val: beta, isGiven: true, isTarget: false },        // 3: Labelled Angle 3 (Vertically opposite pair)
+          { val: angleC, isGiven: true, isTarget: false },      // 4: Labelled Angle 4
+          { val: targetVal, isGiven: false, isTarget: true }    // 5: Target '?'
+        ];
+
+        let curr = tilt;
+        const rays = [curr];
+        for (let i = 0; i < sectors.length - 1; i++) {
+          curr = (curr + sectors[i].val) % 360;
+          rays.push(curr);
+        }
 
         return {
           targetValue: targetVal,
