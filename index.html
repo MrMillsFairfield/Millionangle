@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="en" class="dark h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Who Wants to be a Millionangle</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          tv: {
+            bg: '#03050c',
+            panel: '#080d1e',
+            card: '#0f172a',
+            gold: '#facc15',
+            goldDark: '#ca8a04',
+            goldGlow: '#fef08a',
+            blueGlow: '#2563eb',
+          }
+        },
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          mono: ['Roboto Mono', 'monospace'],
+        }
+      }
+    }
+  }
+</script>
+  <!-- Google Fonts & FontAwesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #0c132c 0%, #020308 100%);
+      color: #f1f5f9;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Metallic Option Hexagon Buttons */
+    .btn-option {
+      background: linear-gradient(180deg, #0e1738 0%, #060a1c 100%);
+      border: 2px solid #1d4ed8;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+      transition: all 0.15s ease-in-out;
+      position: relative;
+    }
+
+    .btn-option:hover:not(:disabled) {
+      background: linear-gradient(180deg, #1e3a8a 0%, #1e293b 100%);
+      border-color: #facc15;
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.4);
+      transform: scale(1.005);
+    }
+
+    .btn-option.selected {
+      background: linear-gradient(180deg, #d97706 0%, #92400e 100%) !important;
+      border-color: #fef08a !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.8) !important;
+      animation: pulse-orange 0.8s infinite alternate;
+    }
+
+    .btn-option.locked {
+      background: linear-gradient(180deg, #ca8a04 0%, #854d0e 100%) !important;
+      border-color: #ffffff !important;
+      animation: flash-gold 0.3s infinite alternate;
+    }
+
+    .btn-option.correct {
+      background: linear-gradient(180deg, #15803d 0%, #166534 100%) !important;
+      border-color: #4ade80 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 25px rgba(74, 222, 128, 0.9) !important;
+      animation: flash-green 0.3s infinite alternate;
+    }
+
+    .btn-option.wrong {
+      background: linear-gradient(180deg, #b91c1c 0%, #991b1b 100%) !important;
+      border-color: #f87171 !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 20px rgba(248, 113, 113, 0.7) !important;
+    }
+
+    .btn-option.disabled-5050 {
+      opacity: 0.2;
+      pointer-events: none;
+      filter: grayscale(100%);
+      border-color: #334155;
+    }
+
+    @keyframes pulse-orange {
+      from { box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+      to { box-shadow: 0 0 22px rgba(245, 158, 11, 0.95); }
+    }
+
+    @keyframes flash-gold {
+      from { opacity: 0.85; }
+      to { opacity: 1; transform: scale(1.01); }
+    }
+
+    @keyframes flash-green {
+      from { opacity: 0.8; }
+      to { opacity: 1; transform: scale(1.02); }
+    }
+
+    /* Lock It In Lock Button */
+    .btn-lock {
+      background: linear-gradient(180deg, #eab308 0%, #ca8a04 100%);
+      border: 2px solid #fef08a;
+      color: #000000;
+      font-weight: 900;
+      box-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
+      transition: all 0.2s ease;
+    }
+
+    .btn-lock:hover:not(:disabled) {
+      background: linear-gradient(180deg, #facc15 0%, #eab308 100%);
+      box-shadow: 0 0 25px rgba(250, 204, 21, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .btn-lock:disabled {
+      background: #1e293b;
+      border-color: #475569;
+      color: #64748b;
+      box-shadow: none;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* Authentic TV Oval Lifeline Buttons */
+    .oval-lifeline {
+      width: 52px;
+      height: 32px;
+      border-radius: 9999px;
+      border: 2px solid #ffffff;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 11px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.8);
+      cursor: pointer;
+    }
+
+    .oval-lifeline:hover:not(:disabled) {
+      border-color: #facc15;
+      color: #facc15;
+      box-shadow: 0 0 12px rgba(250, 204, 21, 0.8);
+      transform: scale(1.05);
+    }
+
+    .oval-lifeline:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+      border-color: #475569;
+      position: relative;
+    }
+
+    .oval-lifeline:disabled::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(45deg, transparent 45%, #ef4444 45%, #ef4444 55%, transparent 55%);
+      border-radius: 9999px;
+    }
+
+    /* Right Side TV Prize Ladder Rows */
+    .ladder-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.5px 8px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      transition: all 0.3s ease;
+    }
+
+    .ladder-row.milestone {
+      font-weight: 900;
+      color: #ffffff;
+    }
+
+    .ladder-row.standard {
+      color: #f97316;
+    }
+
+    .ladder-row.passed {
+      color: #e2e8f0;
+      opacity: 0.6;
+    }
+
+    .ladder-row.active {
+      background: #e2e8f0;
+      color: #020617 !important;
+      font-weight: 900 !important;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+      transform: scale(1.02);
+    }
+
+    .ladder-row.active .diamond {
+      color: #020617 !important;
+    }
+
+    /* Flying Orb Energy Particle */
+    .flying-orb {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fef08a 0%, #facc15 50%, #d97706 100%);
+      box-shadow: 0 0 20px #facc15, 0 0 40px #f59e0b;
+      pointer-events: none;
+      z-index: 100;
+      transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* Rotating Protractor TV Logo */
+    @keyframes spin-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spin-slow 40s linear infinite;
+    }
+  </style>
+</head>
+<body class="flex w-full h-full p-2 sm:p-3 gap-2 sm:gap-3 bg-tv-bg select-none overflow-hidden relative">
+
+  <!-- ========================================================================== -->
+  <!-- HOME SCREEN OVERLAY -->
+  <!-- ========================================================================== -->
+  <div id="screenHome" class="fixed inset-0 z-40 bg-[#03050c] flex flex-col items-center justify-between p-4 sm:p-6 overflow-y-auto">
+    
+    <div class="flex-1 flex flex-col items-center justify-center max-w-lg w-full text-center my-auto space-y-6">
+      
+      <!-- TV SHOW STYLIZED PROTRACTOR LOGO -->
+      <div class="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center group shrink-0">
+        <!-- Blue Glow Outer Aura -->
+        <div class="absolute inset-0 rounded-full bg-blue-600/20 blur-2xl animate-pulse"></div>
+        
+        <!-- Outer Metallic Circle Frame -->
+        <div class="absolute inset-0 rounded-full border-4 border-amber-400/80 shadow-[0_0_30px_rgba(250,204,21,0.4)] bg-gradient-to-tr from-[#050b24] via-[#0f173d] to-[#1e1b4b] flex items-center justify-center overflow-hidden">
+          
+          <!-- Radial 360 Protractor Grid Background -->
+          <svg class="absolute inset-0 w-full h-full opacity-30 animate-spin-slow" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="90" fill="none" stroke="#facc15" stroke-width="1.5" stroke-dasharray="2,4" />
+            <circle cx="100" cy="100" r="70" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4,4" />
+            <circle cx="100" cy="100" r="50" fill="none" stroke="#facc15" stroke-width="1" />
+            <!-- Protractor Degree Ticks (Every 15 deg) -->
+            <g stroke="#38bdf8" stroke-width="1">
+              <line x1="100" y1="10" x2="100" y2="20" />
+              <line x1="100" y1="180" x2="100" y2="190" />
+              <line x1="10" y1="100" x2="20" y2="100" />
+              <line x1="180" y1="100" x2="190" y2="100" />
+              <line x1="36" y1="36" x2="43" y2="43" />
+              <line x1="164" y1="164" x2="157" y2="157" />
+              <line x1="36" y1="164" x2="43" y2="157" />
+              <line x1="164" y1="36" x2="157" y2="43" />
+            </g>
+          </svg>
+
+          <!-- Interlocking Green Radial Question Marks / Angle Arcs (Show Logo Accent) -->
+          <svg class="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 200 200">
+            <g fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round">
+              <path d="M100 40 C120 40, 130 60, 100 80 C100 90, 100 100, 100 100" />
+              <path d="M160 100 C160 120, 140 130, 120 100 C110 100, 100 100, 100 100" />
+              <path d="M100 160 C80 160, 70 140, 100 120 C100 110, 100 100, 100 100" />
+              <path d="M40 100 C40 80, 60 70, 80 100 C90 100, 100 100, 100 100" />
+            </g>
+          </svg>
+
+          <!-- Circular Arc Text Labeling -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span class="text-[10px] sm:text-xs font-black tracking-[0.25em] text-amber-300 uppercase px-6 text-center leading-tight">
+              WHO WANTS TO BE A
+            </span>
+          </div>
+
+          <!-- Center Metallic Banner Box with MILLIONANGLE -->
+          <div class="absolute w-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 border-y-2 border-white shadow-xl py-1.5 flex items-center justify-center">
+            <h1 class="text-xl sm:text-2xl font-black text-black tracking-widest uppercase font-mono drop-shadow">
+              MILLIONANGLE
+            </h1>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Tagline & Description -->
+      <div>
+        <p class="text-xs sm:text-sm text-slate-300 font-medium max-w-sm mx-auto">
+          Test your geometry knowledge, master angles from 0° to 360°, and climb the ladder to win <span class="text-amber-400 font-bold">$1,000,000</span>!
+        </p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="w-full space-y-3 pt-2">
+        <button id="btnStartGame" class="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-black font-black text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i>
+          <span>Play Game</span>
+        </button>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btnHomeLeaderboard" class="py-2.5 bg-slate-900 hover:bg-slate-800 border border-indigo-500/50 text-indigo-300 font-bold text-xs uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-trophy text-amber-400"></i>
+            <span>Leaderboard</span>
+          </button>
+          
+          <button id="btnHomeRules" class="py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 font-bold text-xs uppercase tracking-wider rounded-xl transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-circle-info text-sky-400"></i>
+            <span>How to Play</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="text-[11px] text-slate-500 font-medium">
+      Who Wants to be a Millionangle &copy; Geometry TV Edition
+    </footer>
+
+  </div>
+
+  <!-- ========================================================================== -->
+  <!-- LEFT GAME PANEL (80% Width) -->
+  <!-- ========================================================================== -->
+  <main class="flex-1 flex flex-col h-full gap-2 justify-between min-w-0">
+    
+    <!-- TOP BAR: Navigation & Audio Controller -->
+    <header class="w-full bg-tv-panel/90 border border-slate-800 rounded-xl px-3 py-2 flex items-center justify-between shadow-lg shrink-0">
+      <div class="flex items-center gap-2 cursor-pointer" id="btnHeaderHome">
+        <i class="fa-solid fa-shapes text-amber-400 text-lg"></i>
+        <span class="text-xs sm:text-sm font-black tracking-widest text-amber-400 uppercase">Millionangle</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button id="btnHeaderLeaderboard" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs transition flex items-center gap-1.5">
+          <i class="fa-solid fa-trophy text-amber-400"></i>
+          <span class="hidden sm:inline text-[11px] font-bold">Leaderboard</span>
+        </button>
+
+        <button id="btnToggleAudio" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs transition flex items-center gap-1.5">
+          <i id="audioIcon" class="fa-solid fa-volume-high text-amber-400"></i>
+          <span class="hidden sm:inline text-[11px] font-bold">Sound</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- CENTER: GEOMETRY DIAGRAM CANVAS -->
+    <div class="flex-1 bg-tv-panel/90 border border-slate-800/80 rounded-2xl shadow-2xl overflow-hidden relative flex items-center justify-center min-h-0">
+      <canvas id="geometryCanvas" class="w-full h-full object-contain cursor-default"></canvas>
+    </div>
+
+    <!-- BOTTOM: QUESTION & 2x2 OPTIONS GRID + LOCK IN BUTTON -->
+    <div class="flex flex-col gap-2 shrink-0">
+      
+      <!-- Question Prompt Bar -->
+      <div class="bg-tv-panel border-2 border-amber-500/60 rounded-xl py-2 px-4 text-center shadow-lg relative">
+        <p id="textQuestionPrompt" class="text-xs sm:text-sm md:text-base font-black text-slate-100 tracking-wide">
+          What is the value of missing angle <span class="text-amber-400 text-base sm:text-lg font-black">'?'</span> ?
+        </p>
+      </div>
+
+      <!-- 2x2 Options Grid -->
+      <div class="grid grid-cols-2 gap-2 sm:gap-2.5">
+        
+        <!-- Option A -->
+        <button id="btnOptionA" class="btn-option group p-2.5 sm:p-3 rounded-xl text-left flex items-center gap-2.5 sm:gap-3 w-full">
+          <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40 font-black text-xs sm:text-sm flex items-center justify-center shrink-0 group-hover:bg-amber-400 group-hover:text-black transition">A</span>
+          <span id="textOptionA" class="text-sm sm:text-base font-extrabold text-slate-100 font-mono tracking-wide">--</span>
+        </button>
+
+        <!-- Option B -->
+        <button id="btnOptionB" class="btn-option group p-2.5 sm:p-3 rounded-xl text-left flex items-center gap-2.5 sm:gap-3 w-full">
+          <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40 font-black text-xs sm:text-sm flex items-center justify-center shrink-0 group-hover:bg-amber-400 group-hover:text-black transition">B</span>
+          <span id="textOptionB" class="text-sm sm:text-base font-extrabold text-slate-100 font-mono tracking-wide">--</span>
+        </button>
+
+        <!-- Option C -->
+        <button id="btnOptionC" class="btn-option group p-2.5 sm:p-3 rounded-xl text-left flex items-center gap-2.5 sm:gap-3 w-full">
+          <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40 font-black text-xs sm:text-sm flex items-center justify-center shrink-0 group-hover:bg-amber-400 group-hover:text-black transition">C</span>
+          <span id="textOptionC" class="text-sm sm:text-base font-extrabold text-slate-100 font-mono tracking-wide">--</span>
+        </button>
+
+        <!-- Option D -->
+        <button id="btnOptionD" class="btn-option group p-2.5 sm:p-3 rounded-xl text-left flex items-center gap-2.5 sm:gap-3 w-full">
+          <span class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/40 font-black text-xs sm:text-sm flex items-center justify-center shrink-0 group-hover:bg-amber-400 group-hover:text-black transition">D</span>
+          <span id="textOptionD" class="text-sm sm:text-base font-extrabold text-slate-100 font-mono tracking-wide">--</span>
+        </button>
+
+      </div>
+
+      <!-- Lock-In Action Bar -->
+      <div class="flex items-center justify-center gap-3">
+        <button id="btnLockIn" class="btn-lock w-full max-w-xs py-2 rounded-xl text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2" disabled>
+          <i class="fa-solid fa-lock"></i>
+          <span>Lock It In</span>
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================== -->
+  <!-- RIGHT SIDE: TV SHOW PRIZE LADDER & LIFELINES -->
+  <!-- ========================================================================== -->
+  <aside class="w-48 sm:w-56 md:w-60 bg-[#00020a] border border-slate-800/80 rounded-2xl p-2.5 flex flex-col justify-between shadow-2xl shrink-0 h-full">
+    
+    <!-- Top Oval Lifelines Container -->
+    <div class="flex items-center justify-center gap-2.5 pt-1 pb-3 border-b border-slate-800/80">
+      
+      <!-- 50:50 Lifeline -->
+      <button id="btnLifeline5050" class="oval-lifeline" title="50:50">
+        50:50
+      </button>
+
+      <!-- Phone A Friend Lifeline -->
+      <button id="btnLifelinePhone" class="oval-lifeline" title="Phone A Friend">
+        <i class="fa-solid fa-phone-flip text-xs"></i>
+      </button>
+
+      <!-- Ask The Audience Lifeline -->
+      <button id="btnLifelineAudience" class="oval-lifeline" title="Ask The Audience">
+        <i class="fa-solid fa-users text-xs"></i>
+      </button>
+
+    </div>
+
+    <!-- Vertical Prize Ladder: Q15 down to Q1 -->
+    <div id="prizeLadderContainer" class="flex-1 flex flex-col justify-between py-2 overflow-hidden">
+      <!-- Generated dynamically by JS with explicit dollar signs -->
+    </div>
+
+  </aside>
+
+  <!-- ========================================================================== -->
+  <!-- MODALS -->
+  <!-- ========================================================================== -->
+
+  <!-- MODAL: HOW TO PLAY -->
+  <div id="modalRules" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-tv-panel border-2 border-sky-500/60 rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-extrabold text-sky-400 flex items-center gap-2">
+          <i class="fa-solid fa-book-open"></i> How to Play & Angle Rules
+        </h3>
+        <button id="btnCloseRules" class="text-slate-400 hover:text-white font-bold text-sm">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300 leading-relaxed max-h-72 overflow-y-auto pr-1">
+        <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+          <span class="font-bold text-amber-400">1. Vertically Opposite Angles</span>
+          <p>When two straight lines intersect, opposite angles are equal to each other.</p>
+        </div>
+        <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+          <span class="font-bold text-amber-400">2. Angles on a Straight Line</span>
+          <p>Angles on a straight line always sum to exactly <strong class="text-white">180°</strong>.</p>
+        </div>
+        <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+          <span class="font-bold text-amber-400">3. Angles around a Point</span>
+          <p>Angles around a full point sum to exactly <strong class="text-white">360°</strong>.</p>
+        </div>
+        <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+          <span class="font-bold text-amber-400">4. Square Corner Symbol</span>
+          <p>A square symbol indicates a Right Angle (<strong class="text-white">90°</strong>).</p>
+        </div>
+      </div>
+
+      <button id="btnOKRules" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs uppercase rounded-xl transition shadow">
+        Got It
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: LEADERBOARD -->
+  <div id="modalLeaderboard" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-tv-panel border-2 border-amber-500/60 rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-extrabold text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-trophy"></i> Hall of Fame Leaderboard
+        </h3>
+        <button id="btnCloseLeaderboard" class="text-slate-400 hover:text-white font-bold text-sm">✕</button>
+      </div>
+
+      <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden max-h-64 overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-900 text-amber-400 font-bold border-b border-slate-800">
+            <tr>
+              <th class="p-2">#</th>
+              <th class="p-2">Name</th>
+              <th class="p-2 text-right">Prize Won</th>
+              <th class="p-2 text-right">Date</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardTableBody" class="divide-y divide-slate-800/60 text-slate-200 font-mono">
+            <!-- Dynamic Leaderboard Entries -->
+          </tbody>
+        </table>
+      </div>
+
+      <button id="btnOKLeaderboard" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase rounded-xl transition shadow">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: ASK THE AUDIENCE -->
+  <div id="modalAudience" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-tv-panel border-2 border-indigo-500/60 rounded-2xl p-5 max-w-sm w-full text-center shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+        <h3 class="text-sm font-extrabold text-amber-400 flex items-center gap-2">
+          <i class="fa-solid fa-users"></i> Audience Poll
+        </h3>
+        <button id="btnCloseAudience" class="text-slate-400 hover:text-white font-bold text-sm">✕</button>
+      </div>
+
+      <div class="h-44 flex items-end justify-between gap-3 px-3 pt-6 pb-2 bg-slate-950 rounded-xl border border-slate-800">
+        <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+          <span id="valBarA" class="text-[11px] font-mono font-bold text-amber-400">0%</span>
+          <div id="barA" class="w-full bg-gradient-to-t from-indigo-600 to-amber-400 rounded-t transition-all duration-1000" style="height: 0%;"></div>
+          <span class="text-xs font-bold text-slate-300">A</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+          <span id="valBarB" class="text-[11px] font-mono font-bold text-amber-400">0%</span>
+          <div id="barB" class="w-full bg-gradient-to-t from-indigo-600 to-amber-400 rounded-t transition-all duration-1000" style="height: 0%;"></div>
+          <span class="text-xs font-bold text-slate-300">B</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+          <span id="valBarC" class="text-[11px] font-mono font-bold text-amber-400">0%</span>
+          <div id="barC" class="w-full bg-gradient-to-t from-indigo-600 to-amber-400 rounded-t transition-all duration-1000" style="height: 0%;"></div>
+          <span class="text-xs font-bold text-slate-300">C</span>
+        </div>
+        <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+          <span id="valBarD" class="text-[11px] font-mono font-bold text-amber-400">0%</span>
+          <div id="barD" class="w-full bg-gradient-to-t from-indigo-600 to-amber-400 rounded-t transition-all duration-1000" style="height: 0%;"></div>
+          <span class="text-xs font-bold text-slate-300">D</span>
+        </div>
+      </div>
+
+      <button id="btnOKAudience" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase rounded-xl transition shadow">
+        Continue
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: PHONE A FRIEND -->
+  <div id="modalPhone" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-tv-panel border-2 border-emerald-500/60 rounded-2xl p-5 max-w-md w-full shadow-2xl space-y-4">
+      
+      <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+        <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-400 flex items-center justify-center text-emerald-400 text-lg animate-pulse">
+          <i class="fa-solid fa-phone-flip"></i>
+        </div>
+        <div>
+          <h3 class="text-sm font-extrabold text-white">Calling Dr. Alex (Angle Expert)...</h3>
+          <p id="phoneStatusText" class="text-xs text-emerald-400 font-medium">Call Connected</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 max-h-[220px] overflow-y-auto">
+        <p id="phoneDialogueText" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-mono whitespace-pre-wrap break-words overflow-wrap-break-word">
+        </p>
+      </div>
+
+      <button id="btnOKPhone" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase rounded-xl transition shadow">
+        Thanks, Alex!
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: GAME OVER & NAME ENTRY -->
+  <div id="modalGameOver" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-tv-panel border-2 border-rose-600/60 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4">
+      <div class="w-14 h-14 mx-auto rounded-full bg-rose-500/20 border border-rose-500/50 flex items-center justify-center text-rose-400 text-2xl">
+        <i class="fa-solid fa-circle-xmark"></i>
+      </div>
+      <div>
+        <h2 class="text-xl font-black text-white">Incorrect Answer!</h2>
+        <p class="text-xs text-slate-400 mt-1">That wasn't the correct angle value.</p>
+      </div>
+
+      <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+        <span class="text-[10px] text-slate-400 font-bold uppercase block">Guaranteed Prize</span>
+        <div id="textGameOverPrize" class="text-2xl font-black text-amber-400 font-mono">$0</div>
+      </div>
+
+      <!-- Text Entry Box for Leaderboard -->
+      <div class="text-left space-y-1">
+        <label class="text-[11px] font-bold text-slate-300">Enter Your Name for Leaderboard:</label>
+        <input id="inputGameOverName" type="text" maxlength="16" placeholder="Your Name" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400 font-mono">
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btnSaveGameOverScore" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase rounded-xl transition">
+          Save Score
+        </button>
+        <button id="btnPlayAgain" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase rounded-xl transition shadow">
+          Play Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: $1,000,000 VICTORY & FIREWORKS CANVAS -->
+  <div id="modalWin" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <!-- Fireworks Canvas Background -->
+    <canvas id="fireworksCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
+
+    <div class="bg-tv-panel/95 border-2 border-amber-400 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl space-y-4 relative z-10">
+      <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center text-black text-3xl shadow-xl shadow-amber-500/30 animate-bounce">
+        <i class="fa-solid fa-trophy"></i>
+      </div>
+      <div>
+        <h2 class="text-2xl font-black text-amber-400 uppercase tracking-wide">MILLIONANGLE!</h2>
+        <p class="text-xs text-amber-200/80 mt-1">You conquered all 15 angle geometry tiers!</p>
+      </div>
+
+      <div class="bg-slate-950 p-3 rounded-xl border border-amber-500/50">
+        <span class="text-[10px] text-slate-400 font-bold uppercase block">Grand Prize</span>
+        <div class="text-3xl font-black text-amber-400 font-mono">$1,000,000</div>
+      </div>
+
+      <!-- Text Entry Box for Leaderboard -->
+      <div class="text-left space-y-1">
+        <label class="text-[11px] font-bold text-amber-300">Enter Champion Name:</label>
+        <input id="inputWinName" type="text" maxlength="16" placeholder="Champion Name" class="w-full px-3 py-2 bg-slate-950 border border-amber-500/50 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400 font-mono">
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btnSaveWinScore" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs uppercase rounded-xl transition">
+          Save Score
+        </button>
+        <button id="btnWinPlayAgain" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase rounded-xl transition shadow">
+          Play Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       WEB AUDIO SYNTHESIZER ENGINE WITH CASH REGISTER SOUND
+       ========================================================================== */
+    class AudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playClick() {
+        if (!this.enabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+      }
+
+      playLockIn() {
+        if (!this.enabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, this.ctx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.5);
+      }
+
+      // Cash Register / Cha-Ching Sound Effect
+      playCash() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        
+        // High metallic register ring
+        const freqs = [987.77, 1318.51, 1567.98, 2093.00]; // B5, E6, G6, C7
+        freqs.forEach((f, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now + i * 0.04);
+          gain.gain.setValueAtTime(0.2, now + i * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.04 + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.04);
+          osc.stop(now + i * 0.04 + 0.3);
+        });
+
+        // Coin drop slide
+        const coinOsc = this.ctx.createOscillator();
+        const coinGain = this.ctx.createGain();
+        coinOsc.type = 'triangle';
+        coinOsc.frequency.setValueAtTime(1800, now + 0.12);
+        coinOsc.frequency.exponentialRampToValueAtTime(2800, now + 0.28);
+        coinGain.gain.setValueAtTime(0.15, now + 0.12);
+        coinGain.gain.exponentialRampToValueAtTime(0.01, now + 0.28);
+        coinOsc.connect(coinGain);
+        coinGain.connect(this.ctx.destination);
+        coinOsc.start(now + 0.12);
+        coinOsc.stop(now + 0.28);
+      }
+
+      playCorrect() {
+        if (!this.enabled) return;
+        this.playCash(); // Play Cash Register chime
+      }
+
+      playWrong() {
+        if (!this.enabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(60, this.ctx.currentTime + 0.35);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.35);
+      }
+
+      playLifeline() {
+        if (!this.enabled) return;
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(350, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(900, this.ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.18);
+      }
+
+      playWin() {
+        if (!this.enabled) return;
+        this.init();
+        const arpeggio = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+        arpeggio.forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.1);
+          gain.gain.setValueAtTime(0.25, this.ctx.currentTime + i * 0.1);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + i * 0.1 + 0.4);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(this.ctx.currentTime + i * 0.1);
+          osc.stop(this.ctx.currentTime + i * 0.1 + 0.4);
+        });
+      }
+    }
+
+    const audio = new AudioEngine();
+  </script>
+
+  <script>
+    /* ==========================================================================
+       PRIZE LADDER DEFINITIONS WITH DOLLAR SIGNS & QUESTION GENERATOR
+       ========================================================================== */
+    const PRIZE_TIERS = [
+      { num: 1,  amount: 100,     formatted: "$100",       safe: false },
+      { num: 2,  amount: 200,     formatted: "$200",       safe: false },
+      { num: 3,  amount: 300,     formatted: "$300",       safe: false },
+      { num: 4,  amount: 500,     formatted: "$500",       safe: false },
+      { num: 5,  amount: 1000,    formatted: "$1,000",     safe: true  }, // Milestone 1
+      { num: 6,  amount: 2000,    formatted: "$2,000",     safe: false },
+      { num: 7,  amount: 4000,    formatted: "$4,000",     safe: false },
+      { num: 8,  amount: 8000,    formatted: "$8,000",     safe: false },
+      { num: 9,  amount: 16000,   formatted: "$16,000",    safe: false },
+      { num: 10, amount: 32000,   formatted: "$32,000",    safe: true  }, // Milestone 2
+      { num: 11, amount: 64000,   formatted: "$64,000",    safe: false },
+      { num: 12, amount: 125000,  formatted: "$125,000",   safe: false },
+      { num: 13, amount: 250000,  formatted: "$250,000",   safe: false },
+      { num: 14, amount: 500000,  formatted: "$500,000",   safe: false },
+      { num: 15, amount: 1000000, formatted: "$1 MILLION", safe: true  }  // Top Prize
+    ];
+
+    class QuestionGenerator {
+      static generate(levelIdx) {
+        if (levelIdx <= 3) {
+          return this.generateVerticallyOpposite(levelIdx);
+        } else if (levelIdx <= 8) {
+          return this.generateStraightLine(levelIdx);
+        } else {
+          return this.generateAroundPoint(levelIdx);
+        }
+      }
+
+      static generateVerticallyOpposite(level) {
+        const theta = Math.floor(Math.random() * 110) + 35;
+        const tilt = Math.floor(Math.random() * 30) + 15;
+        const rays = [tilt, tilt + theta, tilt + 180, tilt + theta + 180].sort((a,b) => a - b);
+        
+        const sectors = [
+          { val: theta, isGiven: true, isTarget: false },
+          { val: 180 - theta, isGiven: false, isTarget: false },
+          { val: theta, isGiven: false, isTarget: true },
+          { val: 180 - theta, isGiven: false, isTarget: false }
+        ];
+
+        return {
+          targetValue: theta,
+          rays: rays,
+          sectors: sectors,
+          choices: this.buildChoices(theta, [180 - theta, theta + 10, theta - 15, 90])
+        };
+      }
+
+      static generateStraightLine(level) {
+        const useRightAngle = (level >= 5) || (Math.random() < 0.5);
+        const rayCount = (level >= 7) ? 4 : 3;
+
+        let angles = [];
+        let targetIdx = 0;
+
+        if (useRightAngle) {
+          if (rayCount === 3) {
+            const givenA = Math.floor(Math.random() * 55) + 20;
+            const targetVal = 90 - givenA;
+            angles = [90, givenA, targetVal];
+            targetIdx = 2;
+          } else {
+            const givenA = Math.floor(Math.random() * 45) + 20;
+            const targetVal = 90 - givenA;
+            angles = [givenA, 90, targetVal];
+            targetIdx = 2;
+          }
+        } else {
+          if (rayCount === 3) {
+            const givenA = Math.floor(Math.random() * 110) + 35;
+            const targetVal = 180 - givenA;
+            angles = [givenA, targetVal];
+            targetIdx = 1;
+          } else {
+            const givenA = Math.floor(Math.random() * 50) + 25;
+            const givenB = Math.floor(Math.random() * 50) + 25;
+            const targetVal = 180 - givenA - givenB;
+            angles = [givenA, givenB, targetVal];
+            targetIdx = 2;
+          }
+        }
+
+        const baseTilt = 0;
+        let curr = baseTilt;
+        const rays = [curr];
+        const sectors = [];
+
+        for (let i = 0; i < angles.length; i++) {
+          curr += angles[i];
+          rays.push(curr);
+
+          const val = angles[i];
+          const isTarget = (i === targetIdx);
+          const isGiven = !isTarget;
+
+          sectors.push({
+            val: val,
+            isGiven: isGiven,
+            isTarget: isTarget,
+            isRightAngle: (val === 90)
+          });
+        }
+
+        const targetVal = angles[targetIdx];
+
+        return {
+          targetValue: targetVal,
+          rays: rays,
+          sectors: sectors,
+          choices: this.buildChoices(targetVal, [180 - targetVal, targetVal + 15, targetVal - 10, 90])
+        };
+      }
+
+      static generateAroundPoint(level) {
+        const useRightAngle = (level >= 10);
+        const numSectors = (level >= 13) ? 5 : (level >= 11) ? 4 : 3;
+
+        let angles = [];
+        if (numSectors === 3) {
+          if (useRightAngle) {
+            const a = Math.floor(Math.random() * 120) + 40;
+            angles = [90, a, 270 - a];
+          } else {
+            const a = Math.floor(Math.random() * 110) + 40;
+            const b = Math.floor(Math.random() * 110) + 40;
+            angles = [a, b, 360 - a - b];
+          }
+        } else if (numSectors === 4) {
+          if (useRightAngle) {
+            const a = Math.floor(Math.random() * 60) + 30;
+            const b = Math.floor(Math.random() * 60) + 30;
+            angles = [90, a, b, 270 - a - b];
+          } else {
+            const a = Math.floor(Math.random() * 70) + 30;
+            const b = Math.floor(Math.random() * 70) + 30;
+            const c = Math.floor(Math.random() * 70) + 30;
+            angles = [a, b, c, 360 - a - b - c];
+          }
+        } else {
+          const a = 90;
+          const b = Math.floor(Math.random() * 45) + 30;
+          const c = Math.floor(Math.random() * 45) + 30;
+          const d = Math.floor(Math.random() * 45) + 30;
+          angles = [a, b, c, d, 270 - b - c - d];
+        }
+
+        // Randomly pick which sector is the missing target '?'
+        const targetIdx = Math.floor(Math.random() * angles.length);
+        
+        let curr = Math.floor(Math.random() * 40) + 10;
+        const rays = [curr];
+        const sectors = [];
+
+        for (let i = 0; i < angles.length; i++) {
+          const val = angles[i];
+          const isTarget = (i === targetIdx);
+
+          sectors.push({
+            val: val,
+            isGiven: !isTarget,
+            isTarget: isTarget,
+            isRightAngle: (val === 90)
+          });
+
+          if (i < angles.length - 1) {
+            curr = (curr + val) % 360;
+            rays.push(curr);
+          }
+        }
+
+        const targetVal = angles[targetIdx];
+
+        return {
+          targetValue: targetVal,
+          rays: rays,
+          sectors: sectors,
+          choices: this.buildChoices(targetVal, [360 - targetVal, 180 - targetVal, targetVal + 15, 90])
+        };
+      }
+
+      static buildChoices(correctVal, distractorPool) {
+        const pool = new Set();
+        pool.add(correctVal);
+
+        distractorPool.forEach(d => {
+          const clamped = Math.abs(Math.round(d));
+          if (clamped > 0 && clamped < 360 && clamped !== correctVal) {
+            pool.add(clamped);
+          }
+        });
+
+        let offset = 12;
+        while (pool.size < 4) {
+          const alt = correctVal + offset;
+          if (alt > 0 && alt < 360 && alt !== correctVal) {
+            pool.add(alt);
+          }
+          offset = -offset + (offset > 0 ? 6 : -6);
+        }
+
+        const arr = Array.from(pool).slice(0, 4);
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+    }
+  </script>
+
+  <script>
+    /* ==========================================================================
+       GEOMETRY CANVAS RENDERER (NO 90° TEXT FOR RIGHT ANGLES + SLIGHTLY SMALLER BADGES)
+       ========================================================================== */
+    class GeometryCanvasRenderer {
+      constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+
+        window.addEventListener('resize', () => {
+          this.resize();
+          if (this.currentProblem) this.draw(this.currentProblem);
+        });
+      }
+
+      resize() {
+        const rect = this.canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = rect.width * dpr;
+        this.canvas.height = rect.height * dpr;
+        this.ctx.scale(dpr, dpr);
+        this.width = rect.width;
+        this.height = rect.height;
+      }
+
+      draw(problem) {
+        this.currentProblem = problem;
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+
+        ctx.clearRect(0, 0, w, h);
+
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const rayLength = Math.min(w, h) * 0.43;
+
+        // Center Point
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        const rays = problem.rays;
+
+        // 1. Draw Rays
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#94a3b8';
+
+        rays.forEach(deg => {
+          const rad = deg * Math.PI / 180;
+          const rx = centerX + rayLength * Math.cos(rad);
+          const ry = centerY + rayLength * Math.sin(rad);
+
+          ctx.beginPath();
+          ctx.moveTo(centerX, centerY);
+          ctx.lineTo(rx, ry);
+          ctx.stroke();
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.beginPath();
+          ctx.arc(rx, ry, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        // 2. Draw Sectors
+        problem.sectors.forEach((sec, idx) => {
+          if (!sec.isGiven && !sec.isTarget) return;
+
+          const startDeg = rays[idx % rays.length];
+          const endDeg = rays[(idx + 1) % rays.length];
+
+          let startRad = startDeg * Math.PI / 180;
+          let endRad = endDeg * Math.PI / 180;
+
+          if (endRad <= startRad) endRad += Math.PI * 2;
+
+          const radius = sec.isTarget ? 58 : 48;
+
+          // Square Corner Box for Right Angles (90°) - NO 90° TEXT SHOWN!
+          if (sec.isRightAngle && sec.isGiven) {
+            const size = 24;
+            const uX = Math.cos(startRad);
+            const uY = Math.sin(startRad);
+            const vX = Math.cos(endRad);
+            const vY = Math.sin(endRad);
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX + size * uX, centerY + size * uY);
+            ctx.lineTo(centerX + size * uX + size * vX, centerY + size * uY + size * vY);
+            ctx.lineTo(centerX + size * vX, centerY + size * vY);
+            ctx.stroke();
+
+            // NOTE: Do not draw any 90° text label badge for right angles!
+            return;
+          }
+
+          // Arc Line Marker
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, startRad, endRad, false);
+          ctx.strokeStyle = sec.isTarget ? '#f59e0b' : '#38bdf8';
+          ctx.lineWidth = sec.isTarget ? 3.5 : 2.5;
+          ctx.stroke();
+
+          // Label Text Position
+          const midRad = startRad + (endRad - startRad) / 2;
+          const labelDist = radius + 25;
+          const lx = centerX + labelDist * Math.cos(midRad);
+          const ly = centerY + labelDist * Math.sin(midRad);
+
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          if (sec.isTarget) {
+            // Target Badge '?' - Cleanly fit inside badge
+            ctx.fillStyle = 'rgba(245, 158, 11, 0.35)';
+            ctx.beginPath();
+            ctx.arc(lx, ly, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#fef08a';
+            ctx.font = '900 20px Inter, sans-serif';
+            ctx.fillText('?', lx, ly + 1);
+          } else {
+            // Given Angle Badge - Reduced font size to 14px so text fits nicely!
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+            ctx.beginPath();
+            ctx.arc(lx, ly, 17, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '800 14px "JetBrains Mono", sans-serif';
+            ctx.fillText(`${sec.val}°`, lx, ly);
+          }
+        });
+      }
+    }
+  </script>
+
+  <script>
+    /* ==========================================================================
+       VICTORY FIREWORKS CANVAS CONTROLLER
+       ========================================================================== */
+    class FireworksEngine {
+      constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.particles = [];
+        this.running = false;
+
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+
+      resize() {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      start() {
+        this.running = true;
+        this.particles = [];
+        this.resize();
+        this.loop();
+      }
+
+      stop() {
+        this.running = false;
+        this.particles = [];
+      }
+
+      createBurst(x, y) {
+        const count = 50;
+        const colors = ['#facc15', '#38bdf8', '#4ade80', '#f43f5e', '#a855f7'];
+        for (let i = 0; i < count; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const speed = Math.random() * 6 + 2;
+          this.particles.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            alpha: 1,
+            size: Math.random() * 3 + 2
+          });
+        }
+      }
+
+      loop() {
+        if (!this.running) return;
+
+        this.ctx.globalCompositeOperation = 'destination-out';
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.globalCompositeOperation = 'lighter';
+
+        if (Math.random() < 0.12) {
+          this.createBurst(
+            Math.random() * this.canvas.width,
+            Math.random() * (this.canvas.height * 0.6)
+          );
+        }
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+          const p = this.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.08; // gravity
+          p.alpha -= 0.015;
+
+          if (p.alpha <= 0) {
+            this.particles.splice(i, 1);
+            continue;
+          }
+
+          this.ctx.fillStyle = p.color;
+          this.ctx.globalAlpha = p.alpha;
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+
+        requestAnimationFrame(() => this.loop());
+      }
+    }
+  </script>
+
+  <script>
+    /* ==========================================================================
+       MAIN GAME & LEADERBOARD CONTROLLER
+       ========================================================================== */
+    class MillionaireGame {
+      constructor() {
+        this.currentLevel = 0;
+        this.currentQuestion = null;
+        this.selectedOptionIdx = null;
+        this.lastClickIdx = null;
+        this.lastClickTime = 0;
+        this.isLocked = false;
+
+        this.lifelines = {
+          fiftyFifty: false,
+          audience: false,
+          phone: false
+        };
+
+        this.renderer = new GeometryCanvasRenderer('geometryCanvas');
+        this.fireworks = new FireworksEngine('fireworksCanvas');
+
+        this.initLeaderboard();
+        this.initDOM();
+        this.initEvents();
+        this.renderPrizeLadder();
+        this.loadQuestion(0);
+      }
+
+      initLeaderboard() {
+        const stored = localStorage.getItem('millionangle_leaderboard');
+        if (!stored) {
+          // Pre-populate with famous mathematicians/celebrities with older dates & lower prize amounts
+          const defaultEntries = [
+            { name: "Hermione Granger", prize: "$500,000", amount: 500000, date: "May 14, 2024" },
+            { name: "Draco Malfoy", prize: "$500,000", amount: 500000, date: "Jan 10, 2025" },
+            { name: "Neville Longbottom", prize: "$250,000", amount: 250000, date: "Feb 18, 2025" },
+            { name: "Harry Potter", prize: "$125,000", amount: 125000, date: "Nov 05, 2025" },
+            { name: "Dean Thomas", prize: "$64,000", amount: 64000, date: "Aug 22, 2025" },
+            { name: "Ron Weasley", prize: "$32,000", amount: 32000, date: "Dec 12, 2025" }
+          ];
+          localStorage.setItem('millionangle_leaderboard', JSON.stringify(defaultEntries));
+        }
+      }
+
+      getLeaderboard() {
+        return JSON.parse(localStorage.getItem('millionangle_leaderboard')) || [];
+      }
+
+      addLeaderboardEntry(name, levelIdx) {
+        const entries = this.getLeaderboard();
+        const tier = PRIZE_TIERS[levelIdx] || { formatted: "$0", amount: 0 };
+        
+        // Format current date e.g. Sep 24, 2026
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+        entries.push({
+          name: name.trim() || "Anonymous Player",
+          prize: tier.formatted,
+          amount: tier.amount,
+          date: formattedDate
+        });
+
+        entries.sort((a, b) => b.amount - a.amount);
+        localStorage.setItem('millionangle_leaderboard', JSON.stringify(entries.slice(0, 10)));
+        this.renderLeaderboardTable();
+      }
+
+      renderLeaderboardTable() {
+        const body = document.getElementById('leaderboardTableBody');
+        if (!body) return;
+        body.innerHTML = '';
+
+        const entries = this.getLeaderboard();
+        entries.forEach((item, idx) => {
+          const row = document.createElement('tr');
+          row.className = idx === 0 ? "bg-amber-500/10 font-bold" : "";
+          row.innerHTML = `
+            <td class="p-2 text-amber-400 font-bold">${idx + 1}</td>
+            <td class="p-2 text-white">${item.name}</td>
+            <td class="p-2 text-right text-amber-400 font-bold">${item.prize}</td>
+            <td class="p-2 text-right text-slate-400 text-[10px]">${item.date}</td>
+          `;
+          body.appendChild(row);
+        });
+      }
+
+      initDOM() {
+        this.screenHome = document.getElementById('screenHome');
+        this.prizeLadderContainer = document.getElementById('prizeLadderContainer');
+        this.textQuestionPrompt = document.getElementById('textQuestionPrompt');
+        this.btnLockIn = document.getElementById('btnLockIn');
+
+        this.btnOptions = [
+          { btn: document.getElementById('btnOptionA'), text: document.getElementById('textOptionA') },
+          { btn: document.getElementById('btnOptionB'), text: document.getElementById('textOptionB') },
+          { btn: document.getElementById('btnOptionC'), text: document.getElementById('textOptionC') },
+          { btn: document.getElementById('btnOptionD'), text: document.getElementById('textOptionD') }
+        ];
+
+        this.btn5050 = document.getElementById('btnLifeline5050');
+        this.btnAudience = document.getElementById('btnLifelineAudience');
+        this.btnPhone = document.getElementById('btnLifelinePhone');
+
+        // Modals
+        this.modalAudience = document.getElementById('modalAudience');
+        this.modalPhone = document.getElementById('modalPhone');
+        this.modalGameOver = document.getElementById('modalGameOver');
+        this.modalWin = document.getElementById('modalWin');
+        this.modalRules = document.getElementById('modalRules');
+        this.modalLeaderboard = document.getElementById('modalLeaderboard');
+      }
+
+      initEvents() {
+        // Home Screen Buttons
+        document.getElementById('btnStartGame').addEventListener('click', () => {
+          this.screenHome.classList.add('hidden');
+        });
+        document.getElementById('btnHomeRules').addEventListener('click', () => this.modalRules.classList.remove('hidden'));
+        document.getElementById('btnHomeLeaderboard').addEventListener('click', () => {
+          this.renderLeaderboardTable();
+          this.modalLeaderboard.classList.remove('hidden');
+        });
+
+        // Header Nav
+        document.getElementById('btnHeaderHome').addEventListener('click', () => this.screenHome.classList.remove('hidden'));
+        document.getElementById('btnHeaderLeaderboard').addEventListener('click', () => {
+          this.renderLeaderboardTable();
+          this.modalLeaderboard.classList.remove('hidden');
+        });
+
+        // Options click
+        this.btnOptions.forEach((opt, idx) => {
+          opt.btn.addEventListener('click', () => this.handleOptionClick(idx));
+        });
+
+        // Lock It In
+        this.btnLockIn.addEventListener('click', () => {
+          if (this.selectedOptionIdx !== null && !this.isLocked) {
+            this.lockInAnswer(this.selectedOptionIdx);
+          }
+        });
+
+        // Lifelines
+        this.btn5050.addEventListener('click', () => this.use5050());
+        this.btnAudience.addEventListener('click', () => this.useAudience());
+        this.btnPhone.addEventListener('click', () => this.usePhone());
+
+        // Modal Closers
+        document.getElementById('btnCloseAudience').addEventListener('click', () => this.modalAudience.classList.add('hidden'));
+        document.getElementById('btnOKAudience').addEventListener('click', () => this.modalAudience.classList.add('hidden'));
+        document.getElementById('btnOKPhone').addEventListener('click', () => this.modalPhone.classList.add('hidden'));
+        document.getElementById('btnCloseRules').addEventListener('click', () => this.modalRules.classList.add('hidden'));
+        document.getElementById('btnOKRules').addEventListener('click', () => this.modalRules.classList.add('hidden'));
+        document.getElementById('btnCloseLeaderboard').addEventListener('click', () => this.modalLeaderboard.classList.add('hidden'));
+        document.getElementById('btnOKLeaderboard').addEventListener('click', () => this.modalLeaderboard.classList.add('hidden'));
+
+        // Save Score Buttons
+        document.getElementById('btnSaveGameOverScore').addEventListener('click', () => {
+          const name = document.getElementById('inputGameOverName').value;
+          let safeLevel = -1;
+          if (this.currentLevel >= 9) safeLevel = 9;
+          else if (this.currentLevel >= 4) safeLevel = 4;
+
+          this.addLeaderboardEntry(name, safeLevel);
+          this.modalGameOver.classList.add('hidden');
+          this.modalLeaderboard.classList.remove('hidden');
+        });
+
+        document.getElementById('btnSaveWinScore').addEventListener('click', () => {
+          const name = document.getElementById('inputWinName').value;
+          this.addLeaderboardEntry(name, 14);
+          this.fireworks.stop();
+          this.modalWin.classList.add('hidden');
+          this.modalLeaderboard.classList.remove('hidden');
+        });
+
+        // Audio Toggle
+        document.getElementById('btnToggleAudio').addEventListener('click', () => {
+          audio.enabled = !audio.enabled;
+          document.getElementById('audioIcon').className = audio.enabled ? 
+            'fa-solid fa-volume-high text-amber-400' : 'fa-solid fa-volume-xmark text-slate-500';
+        });
+
+        // Play Again
+        document.getElementById('btnPlayAgain').addEventListener('click', () => {
+          this.modalGameOver.classList.add('hidden');
+          this.restart();
+        });
+        document.getElementById('btnWinPlayAgain').addEventListener('click', () => {
+          this.fireworks.stop();
+          this.modalWin.classList.add('hidden');
+          this.restart();
+        });
+      }
+
+      renderPrizeLadder() {
+        this.prizeLadderContainer.innerHTML = '';
+
+        PRIZE_TIERS.slice().reverse().forEach((tier) => {
+          const actualIdx = tier.num - 1;
+          const row = document.createElement('div');
+          row.id = `ladderRow-${actualIdx}`;
+          
+          const isMilestone = tier.safe;
+          const numStr = String(tier.num).padStart(2, ' ');
+          const diamondSymbol = (tier.num === 15) ? '&nbsp;&nbsp;' : '◆';
+
+          row.className = `ladder-row ${isMilestone ? 'milestone' : 'standard'}`;
+          row.innerHTML = `
+            <span>${numStr}</span>
+            <span class="diamond text-[10px] ${isMilestone ? 'text-white' : 'text-amber-500'}">${diamondSymbol}</span>
+            <span class="text-right flex-1">${tier.formatted}</span>
+          `;
+          this.prizeLadderContainer.appendChild(row);
+        });
+      }
+
+      updatePrizeLadderUI() {
+        PRIZE_TIERS.forEach((tier, idx) => {
+          const row = document.getElementById(`ladderRow-${idx}`);
+          if (!row) return;
+
+          row.className = 'ladder-row';
+          if (idx === this.currentLevel) {
+            row.classList.add('active');
+          } else if (idx < this.currentLevel) {
+            row.classList.add('passed');
+          } else {
+            if (tier.safe) row.classList.add('milestone');
+            else row.classList.add('standard');
+          }
+        });
+      }
+
+      loadQuestion(levelIdx) {
+        this.currentLevel = levelIdx;
+        this.currentQuestion = QuestionGenerator.generate(levelIdx);
+        this.selectedOptionIdx = null;
+        this.isLocked = false;
+        this.btnLockIn.disabled = true;
+
+        this.updatePrizeLadderUI();
+
+        this.btnOptions.forEach((opt, idx) => {
+          opt.btn.disabled = false;
+          opt.btn.className = 'btn-option group p-2.5 sm:p-3 rounded-xl text-left flex items-center gap-2.5 sm:gap-3 w-full';
+          opt.text.innerText = `${this.currentQuestion.choices[idx]}°`;
+        });
+
+        this.renderer.draw(this.currentQuestion);
+      }
+
+      handleOptionClick(idx) {
+        if (this.isLocked) return;
+
+        const now = Date.now();
+        const isDoubleClick = (this.lastClickIdx === idx && (now - this.lastClickTime) < 400);
+        this.lastClickIdx = idx;
+        this.lastClickTime = now;
+
+        if (isDoubleClick) {
+          this.selectedOptionIdx = idx;
+          this.lockInAnswer(idx);
+          return;
+        }
+
+        audio.playClick();
+        this.selectedOptionIdx = idx;
+        this.btnLockIn.disabled = false;
+
+        this.btnOptions.forEach((o, i) => {
+          if (i === idx) {
+            o.btn.classList.add('selected');
+          } else {
+            o.btn.classList.remove('selected');
+          }
+        });
+      }
+
+      // Flying Energy Orb Animation from Option Button to Prize Ladder
+      animateFlyingAnswer(sourceBtn, targetRow, callback) {
+        const srcRect = sourceBtn.getBoundingClientRect();
+        const dstRect = targetRow.getBoundingClientRect();
+
+        const orb = document.createElement('div');
+        orb.className = 'flying-orb';
+        orb.style.left = `${srcRect.left + srcRect.width / 2 - 10}px`;
+        orb.style.top = `${srcRect.top + srcRect.height / 2 - 10}px`;
+        document.body.appendChild(orb);
+
+        requestAnimationFrame(() => {
+          orb.style.left = `${dstRect.left + dstRect.width / 2 - 10}px`;
+          orb.style.top = `${dstRect.top + dstRect.height / 2 - 10}px`;
+          orb.style.transform = 'scale(1.5)';
+        });
+
+        setTimeout(() => {
+          if (orb.parentNode) orb.parentNode.removeChild(orb);
+          if (callback) callback();
+        }, 800);
+      }
+
+      lockInAnswer(selectedIdx) {
+        this.isLocked = true;
+        this.btnLockIn.disabled = true;
+        audio.playLockIn();
+
+        this.btnOptions.forEach(o => o.btn.disabled = true);
+
+        this.btnOptions[selectedIdx].btn.classList.remove('selected');
+        this.btnOptions[selectedIdx].btn.classList.add('locked');
+
+        const chosenVal = this.currentQuestion.choices[selectedIdx];
+        const isCorrect = (chosenVal === this.currentQuestion.targetValue);
+
+        setTimeout(() => {
+          this.btnOptions[selectedIdx].btn.classList.remove('locked');
+
+          if (isCorrect) {
+            audio.playCorrect(); // Cash register sound effect
+            this.btnOptions[selectedIdx].btn.classList.add('correct');
+
+            const sourceBtn = this.btnOptions[selectedIdx].btn;
+            const targetRow = document.getElementById(`ladderRow-${this.currentLevel}`);
+
+            this.animateFlyingAnswer(sourceBtn, targetRow, () => {
+              if (this.currentLevel >= 14) {
+                audio.playWin();
+                this.fireworks.start();
+                this.modalWin.classList.remove('hidden');
+              } else {
+                this.loadQuestion(this.currentLevel + 1);
+              }
+            });
+
+          } else {
+            audio.playWrong();
+            this.btnOptions[selectedIdx].btn.classList.add('wrong');
+
+            const correctIdx = this.currentQuestion.choices.indexOf(this.currentQuestion.targetValue);
+            if (correctIdx !== -1) {
+              this.btnOptions[correctIdx].btn.classList.add('correct');
+            }
+
+            setTimeout(() => {
+              let safePrize = "$0";
+              if (this.currentLevel >= 9) safePrize = "$32,000";
+              else if (this.currentLevel >= 4) safePrize = "$1,000";
+
+              document.getElementById('textGameOverPrize').innerText = safePrize;
+              this.modalGameOver.classList.remove('hidden');
+            }, 1200);
+          }
+        }, 1000);
+      }
+
+      use5050() {
+        if (this.lifelines.fiftyFifty || this.isLocked) return;
+        audio.playLifeline();
+        this.lifelines.fiftyFifty = true;
+        this.btn5050.disabled = true;
+
+        const correctVal = this.currentQuestion.targetValue;
+        const wrongIndices = [];
+        this.currentQuestion.choices.forEach((val, i) => {
+          if (val !== correctVal) wrongIndices.push(i);
+        });
+
+        wrongIndices.sort(() => Math.random() - 0.5);
+        const disableList = wrongIndices.slice(0, 2);
+
+        disableList.forEach(i => {
+          this.btnOptions[i].btn.classList.add('disabled-5050');
+          this.btnOptions[i].text.innerText = '---';
+        });
+      }
+
+      useAudience() {
+        if (this.lifelines.audience || this.isLocked) return;
+        audio.playLifeline();
+        this.lifelines.audience = true;
+        this.btnAudience.disabled = true;
+
+        const correctVal = this.currentQuestion.targetValue;
+        const correctIdx = this.currentQuestion.choices.indexOf(correctVal);
+
+        let percents = [0, 0, 0, 0];
+        let remaining = 100;
+
+        const correctWeight = this.currentLevel < 8 ? Math.floor(Math.random() * 20) + 60 : Math.floor(Math.random() * 20) + 45;
+        percents[correctIdx] = correctWeight;
+        remaining -= correctWeight;
+
+        const activeIndices = [];
+        this.btnOptions.forEach((opt, i) => {
+          if (i !== correctIdx && !opt.btn.classList.contains('disabled-5050')) {
+            activeIndices.push(i);
+          }
+        });
+
+        if (activeIndices.length === 1) {
+          percents[activeIndices[0]] = remaining;
+        } else if (activeIndices.length > 1) {
+          const firstShare = Math.floor(Math.random() * remaining);
+          percents[activeIndices[0]] = firstShare;
+          percents[activeIndices[1]] = remaining - firstShare;
+        } else {
+          percents[correctIdx] += remaining;
+        }
+
+        ['A', 'B', 'C', 'D'].forEach((key, i) => {
+          document.getElementById(`valBar${key}`).innerText = `${percents[i]}%`;
+          document.getElementById(`bar${key}`).style.height = `${percents[i]}%`;
+        });
+
+        this.modalAudience.classList.remove('hidden');
+      }
+
+      usePhone() {
+        if (this.lifelines.phone || this.isLocked) return;
+        audio.playLifeline();
+        this.lifelines.phone = true;
+        this.btnPhone.disabled = true;
+
+        const dialogue = document.getElementById('phoneDialogueText');
+        dialogue.textContent = '';
+        this.modalPhone.classList.remove('hidden');
+
+        const level = this.currentLevel;
+        const q = this.currentQuestion;
+        const hasRightAngle = q.sectors.some(s => s.isRightAngle && s.isGiven);
+
+        let ruleMessage = "";
+
+        if (level <= 3) {
+          ruleMessage = "Remember that vertically opposite angles are always equal to each other!";
+        } else if (level <= 8) {
+          ruleMessage = "Keep in mind that angles along a straight line always add up to 180 degrees!";
+        } else {
+          ruleMessage = "Don't forget, all the angles around a full point add up to 360 degrees!";
+        }
+
+        if (hasRightAngle) {
+          ruleMessage += "\n\nNotice that square corner marker? That means that angle is a right angle and equals 90 degrees!";
+        }
+
+        const fullText = `"Hey there! Need help?\n\n${ruleMessage}"`;
+
+        let i = 0;
+        let typedText = '';
+        const timer = setInterval(() => {
+          typedText += fullText.charAt(i);
+          dialogue.textContent = typedText;
+          i++;
+          if (i >= fullText.length) clearInterval(timer);
+        }, 22);
+      }
+
+      restart() {
+        this.lifelines = { fiftyFifty: false, audience: false, phone: false };
+        this.btn5050.disabled = false;
+        this.btnAudience.disabled = false;
+        this.btnPhone.disabled = false;
+
+        this.btnOptions.forEach(o => o.btn.classList.remove('disabled-5050'));
+        this.loadQuestion(0);
+      }
+    }
+
+    // Initialize Game on Window Load
+    window.onload = () => {
+      window.app = new MillionaireGame();
+    };
+  </script>
+</body>
+</html>
