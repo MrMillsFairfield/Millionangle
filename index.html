@@ -1072,6 +1072,12 @@
           hint = "Angles along a straight line add up to 180 degrees!";
         }
         q.hint = hint;
+        const t = q.targetValue;
+        let errs;
+        if (pick <= 1) errs = [180 - q.sectors[4].val, 360 - t, 180 - t];   // forgot the vertically opposite angle
+        else if (pick <= 3) errs = [Math.abs(180 - (360 - t)), 360 - t, 180 - t]; // used 180 instead of 360
+        else errs = [t + 90, 180 - t, t + 45];                                 // forgot the right angle
+        q.choices = this.hardChoices(t, errs);
         return q;
       }
 
@@ -1102,6 +1108,46 @@
         if (n === 3) return { parts: [1, 2, 3], unit: 60 };
         if (n === 4) return { parts: [2, 3, 3, 2], unit: 36 };
         return { parts: [2, 3, 4, 5, 6], unit: 18 };
+      }
+
+      // Hard mode answer sets: the correct answer, a near miss (2-5 degrees away),
+      // a common calculation error, and one answer that is clearly wrong at a glance.
+      static angleClass(v) {
+        if (v < 90) return 'acute';
+        if (v === 90) return 'right';
+        if (v < 180) return 'obtuse';
+        return 'reflex';
+      }
+
+      static hardChoices(target, errorCandidates) {
+        const ok = v => Number.isInteger(v) && v > 0 && v < 360;
+        const chosen = [target];
+
+        // 1. Common calculation error (first candidate that is a sensible, clearly different value)
+        let err = null;
+        const fallbacks = [180 - target, 360 - target, target + 30, target - 30, target + 45];
+        for (const c of [...errorCandidates, ...fallbacks]) {
+          const v = Math.round(c);
+          if (ok(v) && Math.abs(v - target) >= 6 && !chosen.includes(v)) { err = v; break; }
+        }
+        chosen.push(err);
+
+        // 2. Near miss: very close to the correct answer
+        for (const d of this.shuffle([2, 3, 4, 5, -2, -3, -4, -5])) {
+          const v = target + d;
+          if (ok(v) && !chosen.includes(v)) { chosen.push(v); break; }
+        }
+
+        // 3. Identifiably wrong: far away and a different kind of angle (acute / obtuse / reflex)
+        const far = [];
+        for (let v = 10; v <= 350; v++) {
+          if (Math.abs(v - target) >= 50 && chosen.every(c => Math.abs(c - v) >= 12)) far.push(v);
+        }
+        const diffClass = far.filter(v => this.angleClass(v) !== this.angleClass(target));
+        const pool = diffClass.length ? diffClass : far;
+        chosen.push(pool[Math.floor(Math.random() * pool.length)]);
+
+        return this.shuffle(chosen);
       }
 
       static ratioChoices(angles, targetIdx, unit) {
@@ -1141,7 +1187,12 @@
           banner: ratioText,
           prompt: `The angles around the point are in the ratio <span class="text-sky-300 font-mono">${ratioText}</span>. What is the size of angle <span class="text-amber-400 text-base sm:text-lg font-black">${letters[targetIdx]}</span> ?`,
           hint: "Add up all the parts of the ratio, then divide 360 degrees by that total to find the size of one part. Multiply by the ratio number for your angle!",
-          choices: this.ratioChoices(angles, targetIdx, unit)
+          choices: this.hardChoices(angles[targetIdx], [
+            unit,                                                     // forgot to multiply by the ratio number
+            180 * parts[targetIdx] / parts.reduce((a, b) => a + b, 0),  // used 180 instead of 360
+            360 / n,                                                  // shared equally
+            360 - angles[targetIdx]
+          ])
         };
       }
 
@@ -1198,7 +1249,12 @@
             banner: ratioText,
             prompt: `The angles in this quadrilateral are in the ratio <span class="text-sky-300 font-mono">${ratioText}</span>. What is the size of angle <span class="text-amber-400 text-base sm:text-lg font-black">${letters[targetIdx]}</span> ?`,
             hint: "The angles inside any quadrilateral add up to 360 degrees. Add up the parts of the ratio, divide 360 by that total to find one part, then multiply!",
-            choices: this.ratioChoices(angles, targetIdx, unit)
+            choices: this.hardChoices(angles[targetIdx], [
+            unit,                                                     // forgot to multiply by the ratio number
+            180 * parts[targetIdx] / parts.reduce((a, b) => a + b, 0),  // used 180 instead of 360
+            90,                                                       // shared equally
+            360 - angles[targetIdx]
+          ])
           };
         }
         return this.generateRatioAroundPoint(7);
@@ -1259,7 +1315,12 @@
             banner: ratioText,
             prompt: `One angle in this quadrilateral is ${given}°. The other three are in the ratio <span class="text-sky-300 font-mono">${ratioText}</span>. What is the size of angle <span class="text-amber-400 text-base sm:text-lg font-black">${letters[targetIdx]}</span> ?`,
             hint: "The angles in a quadrilateral add up to 360 degrees. Subtract the given angle first, then share what is left using the ratio: add up the parts, divide, then multiply!",
-            choices: this.buildChoices(target, pool)
+            choices: this.hardChoices(target, [
+              360 * parts[pick] / S,        // forgot to subtract the given angle first
+              (360 - given) / 3,            // shared the remainder equally
+              180 * parts[pick] / S,
+              unit
+            ])
           };
         }
         return this.generateRatioAroundPoint(7);
