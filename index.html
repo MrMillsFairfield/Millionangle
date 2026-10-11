@@ -319,6 +319,22 @@
 
       <!-- Action Buttons -->
       <div class="w-full space-y-3 pt-2">
+        <div class="space-y-1.5">
+          <div class="grid grid-cols-2 gap-2">
+            <label id="lblModeEasy">
+              <input type="radio" name="gameMode" value="standard" class="sr-only" checked>
+              <i id="iconModeEasy" class="fa-solid fa-square-check"></i>
+              <span>Easy Mode</span>
+            </label>
+            <label id="lblModeHard">
+              <input type="radio" name="gameMode" value="hard" class="sr-only">
+              <i id="iconModeHard" class="fa-regular fa-square"></i>
+              <span>Hard Mode</span>
+            </label>
+          </div>
+          <p id="modeDesc" class="text-[11px] text-slate-400 font-medium"></p>
+        </div>
+
         <button id="btnStartGame" class="w-full py-3.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-black font-black text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
           <i class="fa-solid fa-play"></i>
           <span>Play Game</span>
@@ -355,6 +371,7 @@
       <div class="flex items-center gap-2 cursor-pointer" id="btnHeaderHome">
         <i class="fa-solid fa-shapes text-amber-400 text-lg"></i>
         <span class="text-xs sm:text-sm font-black tracking-widest text-amber-400 uppercase">Millionangle</span>
+        <span id="hardBadge" class="hidden px-1.5 py-0.5 rounded bg-rose-600 text-white text-[9px] font-black tracking-wider">HARD</span>
       </div>
 
       <div class="flex items-center gap-2">
@@ -636,8 +653,8 @@
         <i class="fa-solid fa-trophy"></i>
       </div>
       <div>
-        <h2 class="text-2xl font-black text-amber-400 uppercase tracking-wide">MILLIONANGLE!</h2>
-        <p class="text-xs text-amber-200/80 mt-1">You conquered all 15 angle geometry tiers!</p>
+        <h2 id="textWinTitle" class="text-2xl font-black text-amber-400 uppercase tracking-wide">MILLIONANGLE!</h2>
+        <p id="textWinSub" class="text-xs text-amber-200/80 mt-1">You conquered all 15 angle geometry tiers!</p>
       </div>
 
       <div class="bg-slate-950 p-3 rounded-xl border border-amber-500/50">
@@ -831,7 +848,8 @@
     ];
 
    class QuestionGenerator {
-      static generate(levelIdx) {
+      static generate(levelIdx, mode = 'standard') {
+        if (mode === 'hard') return this.generateHard(levelIdx);
         if (levelIdx <= 3) {
           return this.generateVerticallyOpposite(levelIdx);
         } else if (levelIdx <= 8) {
@@ -1025,6 +1043,228 @@
         };
       }
 
+      // ======================= HARD MODE GENERATORS =======================
+      // Q1-5: hardest question styles from the standard game
+      // Q6-9: ratio of angles around a point (letters v, w, x, y, z)
+      // Q10-12: quadrilateral where all four angles come from a ratio (w : x : y : z)
+      // Q13-15: quadrilateral with one angle given and the other three linked by a ratio (x, y, z)
+      static generateHard(levelIdx) {
+        if (levelIdx <= 4) return this.generateHardClassic(levelIdx);
+        if (levelIdx <= 8) return this.generateRatioAroundPoint(levelIdx);
+        if (levelIdx <= 11) return this.generateRatioQuadrilateral(levelIdx);
+        return this.generateGivenAngleQuadrilateral(levelIdx);
+      }
+
+      static generateHardClassic(levelIdx) {
+        const pick = Math.floor(Math.random() * 5);
+        let q, hint;
+        if (pick <= 1) {
+          q = this.generateIntersectingLinesSixSectors(14);
+          hint = "Find the vertically opposite pair first, then use straight lines (180 degrees) to work through the other angles one at a time!";
+        } else if (pick === 2) {
+          q = this.generateAroundPoint(11);
+          hint = "All the angles around a full point add up to 360 degrees!";
+        } else if (pick === 3) {
+          q = this.generateAroundPoint(12);
+          hint = "All the angles around a full point add up to 360 degrees!";
+        } else {
+          q = this.generateStraightLine(8);
+          hint = "Angles along a straight line add up to 180 degrees!";
+        }
+        q.hint = hint;
+        return q;
+      }
+
+      static gcd(a, b) { return b === 0 ? a : this.gcd(b, a % b); }
+
+      static shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      // Random ratio of n whole-number parts whose total divides 360, so every angle is a whole number of degrees.
+      static randomRatio(n, minAngle, maxAngle) {
+        const sums = [6, 8, 9, 10, 12, 15, 18, 20, 24, 30, 36, 40, 45];
+        for (let t = 0; t < 3000; t++) {
+          const s = sums[Math.floor(Math.random() * sums.length)];
+          if (s < n + 1) continue;
+          const unit = 360 / s;
+          const parts = new Array(n).fill(1);
+          for (let k = 0; k < s - n; k++) parts[Math.floor(Math.random() * n)]++;
+          if (parts.every(p => p === parts[0])) continue;
+          if (parts.reduce((a, b) => this.gcd(a, b)) !== 1) continue; // keep ratio in simplest form
+          if (parts.some(p => p * unit < minAngle || p * unit > maxAngle)) continue;
+          return { parts, unit };
+        }
+        if (n === 3) return { parts: [1, 2, 3], unit: 60 };
+        if (n === 4) return { parts: [2, 3, 3, 2], unit: 36 };
+        return { parts: [2, 3, 4, 5, 6], unit: 18 };
+      }
+
+      static ratioChoices(angles, targetIdx, unit) {
+        const target = angles[targetIdx];
+        const pool = this.shuffle([target + unit, target - unit, ...angles.filter((_, i) => i !== targetIdx)]);
+        return this.buildChoices(target, pool);
+      }
+
+      static generateRatioAroundPoint(levelIdx) {
+        const n = [3, 4, 5, 5][levelIdx - 5];
+        const letters = ['v', 'w', 'x', 'y', 'z'].slice(5 - n);
+        const { parts, unit } = this.randomRatio(n, 30, 210);
+        const angles = parts.map(p => p * unit);
+        const targetIdx = Math.floor(Math.random() * n);
+
+        let curr = Math.floor(Math.random() * 360);
+        const rays = [curr];
+        for (let i = 0; i < n - 1; i++) {
+          curr = (curr + angles[i]) % 360;
+          rays.push(curr);
+        }
+
+        const sectors = angles.map((val, i) => ({
+          val: val,
+          letter: letters[i],
+          isGiven: i !== targetIdx,
+          isTarget: i === targetIdx
+        }));
+
+        const ratioText = `${letters.join(' : ')} = ${parts.join(' : ')}`;
+
+        return {
+          kind: 'ratio-point',
+          targetValue: angles[targetIdx],
+          rays: rays,
+          sectors: sectors,
+          banner: ratioText,
+          prompt: `The angles around the point are in the ratio <span class="text-sky-300 font-mono">${ratioText}</span>. What is the size of angle <span class="text-amber-400 text-base sm:text-lg font-black">${letters[targetIdx]}</span> ?`,
+          hint: "Add up all the parts of the ratio, then divide 360 degrees by that total to find the size of one part. Multiply by the ratio number for your angle!",
+          choices: this.ratioChoices(angles, targetIdx, unit)
+        };
+      }
+
+      // Builds a convex quadrilateral (unit coordinates) with the given interior angles in order.
+      static buildQuadVertices(angles) {
+        const rad = d => d * Math.PI / 180;
+        const th = [Math.random() * Math.PI * 2];
+        for (let k = 1; k < 4; k++) th.push(th[k - 1] + Math.PI - rad(angles[k]));
+        const u = th.map(t => ({ x: Math.cos(t), y: Math.sin(t) }));
+        const det = u[2].x * u[3].y - u[2].y * u[3].x;
+        if (Math.abs(det) < 1e-6) return null;
+
+        for (let tries = 0; tries < 80; tries++) {
+          const L0 = 1;
+          const L1 = 0.35 + Math.random() * 1.9;
+          const rx = -(L0 * u[0].x + L1 * u[1].x);
+          const ry = -(L0 * u[0].y + L1 * u[1].y);
+          const L2 = (rx * u[3].y - ry * u[3].x) / det;
+          const L3 = (u[2].x * ry - u[2].y * rx) / det;
+          const L = [L0, L1, L2, L3];
+          if (L2 <= 0 || L3 <= 0) continue;
+          if (Math.min(...L) / Math.max(...L) < 0.3) continue;
+
+          const V = [{ x: 0, y: 0 }];
+          for (let k = 0; k < 3; k++) {
+            V.push({ x: V[k].x + L[k] * u[k].x, y: V[k].y + L[k] * u[k].y });
+          }
+          return V;
+        }
+        return null;
+      }
+
+      static generateRatioQuadrilateral(levelIdx) {
+        // All four angles come from a ratio w : x : y : z (sum 360), and the player finds one of them.
+        const letters = ['w', 'x', 'y', 'z'];
+        for (let attempt = 0; attempt < 300; attempt++) {
+          const { parts, unit } = this.randomRatio(4, 45, 165);
+          const angles = parts.map(p => p * unit);
+          const verts = this.buildQuadVertices(angles);
+          if (!verts) continue;
+
+          const targetIdx = Math.floor(Math.random() * 4);
+          const ratioText = `${letters.join(' : ')} = ${parts.join(' : ')}`;
+
+          return {
+            kind: 'quad',
+            targetValue: angles[targetIdx],
+            vertices: verts,
+            angles: angles,
+            letters: letters,
+            targetIdx: targetIdx,
+            unit: unit,
+            sectors: [],
+            banner: ratioText,
+            prompt: `The angles in this quadrilateral are in the ratio <span class="text-sky-300 font-mono">${ratioText}</span>. What is the size of angle <span class="text-amber-400 text-base sm:text-lg font-black">${letters[targetIdx]}</span> ?`,
+            hint: "The angles inside any quadrilateral add up to 360 degrees. Add up the parts of the ratio, divide 360 by that total to find one part, then multiply!",
+            choices: this.ratioChoices(angles, targetIdx, unit)
+          };
+        }
+        return this.generateRatioAroundPoint(7);
+      }
+
+      static generateGivenAngleQuadrilateral(levelIdx) {
+        // One angle is given in degrees; the other three are unknowns (x, y, z) linked only by a ratio.
+        // The base unit is picked freely so it varies a lot from question to question.
+        const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+        for (let attempt = 0; attempt < 8000; attempt++) {
+          const unit = rnd(4, 30);
+          if (unit === 9) continue;
+          const parts = [rnd(1, 9), rnd(1, 9), rnd(1, 9)];
+          if (parts.every(p => p === parts[0])) continue;
+          if (parts.reduce((a, b) => this.gcd(a, b)) !== 1) continue;
+          const S = parts[0] + parts[1] + parts[2];
+          const given = 360 - unit * S;
+          if (given < 50 || given > 150) continue;
+          if (parts.some(p => p * unit < 40 || p * unit > 165)) continue;
+
+          const givenIdx = rnd(0, 3);
+          const unknownVerts = [0, 1, 2, 3].filter(i => i !== givenIdx);
+          const angles = new Array(4);
+          const letters = new Array(4);
+          const unk = ['x', 'y', 'z'];
+          angles[givenIdx] = given;
+          letters[givenIdx] = `${given}°`;
+          unknownVerts.forEach((v, i) => {
+            angles[v] = parts[i] * unit;
+            letters[v] = unk[i];
+          });
+
+          const verts = this.buildQuadVertices(angles);
+          if (!verts) continue;
+
+          const pick = rnd(0, 2);
+          const targetIdx = unknownVerts[pick];
+          const target = angles[targetIdx];
+          const ratioText = `x : y : z = ${parts.join(' : ')}`;
+
+          const pool = this.shuffle([
+            target + unit,
+            target - unit,
+            Math.round(360 * parts[pick] / S),
+            given,
+            ...unknownVerts.filter(v => v !== targetIdx).map(v => angles[v])
+          ]);
+
+          return {
+            kind: 'quad',
+            targetValue: target,
+            vertices: verts,
+            angles: angles,
+            letters: letters,
+            targetIdx: targetIdx,
+            unit: unit,
+            sectors: [],
+            banner: ratioText,
+            prompt: `One angle in this quadrilateral is ${given}°. The other three are in the ratio <span class="text-sky-300 font-mono">${ratioText}</span>. What is the size of angle <span class="text-amber-400 text-base sm:text-lg font-black">${letters[targetIdx]}</span> ?`,
+            hint: "The angles in a quadrilateral add up to 360 degrees. Subtract the given angle first, then share what is left using the ratio: add up the parts, divide, then multiply!",
+            choices: this.buildChoices(target, pool)
+          };
+        }
+        return this.generateRatioAroundPoint(7);
+      }
+
       static buildChoices(correctVal, distractorPool) {
         const pool = new Set();
         pool.add(correctVal);
@@ -1081,17 +1321,126 @@
         this.height = rect.height;
       }
 
+      drawBanner(text) {
+        if (!text) return;
+        const ctx = this.ctx;
+        let size = 16;
+        ctx.font = `800 ${size}px "Roboto Mono", monospace`;
+        let tw = ctx.measureText(text).width + 32;
+        while (tw > this.width - 12 && size > 9) {
+          size -= 1;
+          ctx.font = `800 ${size}px "Roboto Mono", monospace`;
+          tw = ctx.measureText(text).width + 32;
+        }
+        const bx = this.width / 2 - tw / 2;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(bx, 10, tw, 30, 8); else ctx.rect(bx, 10, tw, 30);
+        ctx.fillStyle = 'rgba(250, 204, 21, 0.12)';
+        ctx.fill();
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = '#fef08a';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, this.width / 2, 26);
+      }
+
+      drawQuad(problem) {
+        const ctx = this.ctx;
+        const w = this.width;
+        const h = this.height;
+        ctx.clearRect(0, 0, w, h);
+        this.drawBanner(problem.banner);
+
+        const V = problem.vertices;
+        const xs = V.map(p => p.x), ys = V.map(p => p.y);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        const top = 56, margin = 28;
+        const availW = w - 2 * margin;
+        const availH = h - top - margin;
+        const scale = Math.min(availW / (maxX - minX), availH / (maxY - minY));
+        const ox = w / 2 - ((minX + maxX) / 2) * scale;
+        const oy = top + availH / 2 - ((minY + maxY) / 2) * scale;
+        const P = V.map(p => ({ x: ox + p.x * scale, y: oy + p.y * scale }));
+
+        // Shape
+        ctx.beginPath();
+        P.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#94a3b8';
+        ctx.stroke();
+
+        const r = Math.max(18, Math.min(34, Math.min(availW, availH) * 0.1));
+        const badgeR = Math.max(12, Math.min(17, r * 0.55));
+
+        P.forEach((p, k) => {
+          const prev = P[(k + 3) % 4];
+          const next = P[(k + 1) % 4];
+          const a1 = Math.atan2(prev.y - p.y, prev.x - p.x);
+          const a2 = Math.atan2(next.y - p.y, next.x - p.x);
+          let diff = a2 - a1;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff <= -Math.PI) diff += Math.PI * 2;
+          const isTarget = (k === problem.targetIdx);
+
+          // Corner dot
+          ctx.fillStyle = '#94a3b8';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Interior angle arc
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, isTarget ? r + 5 : r, a1, a2, diff < 0);
+          ctx.strokeStyle = isTarget ? '#f59e0b' : '#38bdf8';
+          ctx.lineWidth = isTarget ? 3.5 : 2.5;
+          ctx.stroke();
+
+          // Label badge along the bisector
+          const label = problem.letters[k];
+          const isLong = label.length > 1;
+          const bR = isLong ? Math.max(badgeR, 21) : badgeR;
+          const mid = a1 + diff / 2;
+          const dist = r * 1.75 + 6;
+          const lx = p.x + dist * Math.cos(mid);
+          const ly = p.y + dist * Math.sin(mid);
+
+          ctx.beginPath();
+          ctx.arc(lx, ly, bR, 0, Math.PI * 2);
+          ctx.fillStyle = isTarget ? 'rgba(245, 158, 11, 0.35)' : 'rgba(15, 23, 42, 0.92)';
+          ctx.fill();
+          ctx.strokeStyle = isTarget ? '#facc15' : '#38bdf8';
+          ctx.lineWidth = isTarget ? 2 : 1.5;
+          ctx.stroke();
+
+          ctx.fillStyle = isTarget ? '#fef08a' : '#ffffff';
+          ctx.font = isLong ? '800 13px "Roboto Mono", monospace' : '900 16px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, lx, ly + 1);
+        });
+      }
+
       draw(problem) {
         this.currentProblem = problem;
+        if (problem.kind === 'quad') { this.drawQuad(problem); return; }
         const ctx = this.ctx;
         const w = this.width;
         const h = this.height;
 
         ctx.clearRect(0, 0, w, h);
+        if (problem.banner) this.drawBanner(problem.banner);
 
         const centerX = w / 2;
-        const centerY = h / 2;
-        const rayLength = Math.min(w, h) * 0.43;
+        const hasBanner = !!problem.banner;
+        const centerY = h / 2 + (hasBanner ? 22 : 0);
+        const rayLength = Math.min(w, hasBanner ? h - 56 : h) * 0.43;
 
         // Center Point
         ctx.fillStyle = '#38bdf8';
@@ -1184,7 +1533,7 @@
 
             ctx.fillStyle = '#fef08a';
             ctx.font = '900 20px Inter, sans-serif';
-            ctx.fillText('?', lx, ly + 1);
+            ctx.fillText(sec.letter || '?', lx, ly + 1);
           } else {
             // Given Angle Badge - Reduced font size to 14px so text fits nicely!
             ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
@@ -1198,7 +1547,12 @@
 
             ctx.fillStyle = '#ffffff';
             ctx.font = '800 14px "JetBrains Mono", sans-serif';
-            ctx.fillText(`${sec.val}°`, lx, ly);
+            if (sec.letter) {
+              ctx.font = '800 17px Inter, sans-serif';
+              ctx.fillText(sec.letter, lx, ly + 1);
+            } else {
+              ctx.fillText(`${sec.val}°`, lx, ly);
+            }
           }
         });
       }
@@ -1299,9 +1653,12 @@
     /* ==========================================================================
        MAIN GAME & LEADERBOARD CONTROLLER
        ========================================================================== */
+    const DEFAULT_PROMPT = `What is the value of missing angle <span class="text-amber-400 text-base sm:text-lg font-black">'?'</span> ?`;
+
     class MillionaireGame {
       constructor() {
         this.currentLevel = 0;
+        this.mode = 'standard';
         this.currentQuestion = null;
         this.selectedOptionIdx = null;
         this.lastClickIdx = null;
@@ -1356,7 +1713,8 @@
           name: name.trim() || "Anonymous Player",
           prize: tier.formatted,
           amount: tier.amount,
-          date: formattedDate
+          date: formattedDate,
+          hard: this.mode === 'hard'
         });
 
         entries.sort((a, b) => b.amount - a.amount);
@@ -1375,7 +1733,7 @@
           row.className = idx === 0 ? "bg-amber-500/10 font-bold" : "";
           row.innerHTML = `
             <td class="p-2 text-amber-400 font-bold">${idx + 1}</td>
-            <td class="p-2 text-white">${item.name}</td>
+            <td class="p-2 text-white">${item.name}${item.hard ? ' <span class="ml-1 px-1 py-0.5 rounded bg-rose-600 text-white text-[8px] font-black align-middle">HARD</span>' : ''}</td>
             <td class="p-2 text-right text-amber-400 font-bold">${item.prize}</td>
             <td class="p-2 text-right text-slate-400 text-[10px]">${item.date}</td>
           `;
@@ -1411,7 +1769,33 @@
 
       initEvents() {
         // Home Screen Buttons
+        this.updateModeSelect();
+
+        // Playtesting cheat code: type "hard11" (or "easy7", etc.) and press Enter to jump to that question.
+        let cheatBuf = '';
+        let cheatTimer = null;
+        document.addEventListener('keydown', (e) => {
+          const t = e.target;
+          if (t && t.tagName === 'INPUT' && t.type === 'text') return;
+          if (e.key === 'Enter') {
+            const m = cheatBuf.toLowerCase().match(/^(hard|easy)(\d{1,2})$/);
+            cheatBuf = '';
+            if (m) {
+              e.preventDefault();
+              this.jumpTo(m[1] === 'hard' ? 'hard' : 'standard', parseInt(m[2], 10));
+            }
+            return;
+          }
+          if (e.key && e.key.length === 1) {
+            cheatBuf = (cheatBuf + e.key).slice(-8);
+            clearTimeout(cheatTimer);
+            cheatTimer = setTimeout(() => { cheatBuf = ''; }, 2000);
+          }
+        });
+        document.querySelectorAll('input[name="gameMode"]').forEach(r => r.addEventListener('change', () => this.updateModeSelect()));
         document.getElementById('btnStartGame').addEventListener('click', () => {
+          const chosen = this.getSelectedMode();
+          if (this.mode !== chosen) this.setMode(chosen);
           this.screenHome.classList.add('hidden');
         });
         document.getElementById('btnHomeRules').addEventListener('click', () => this.modalRules.classList.remove('hidden'));
@@ -1533,7 +1917,8 @@
 
       loadQuestion(levelIdx) {
         this.currentLevel = levelIdx;
-        this.currentQuestion = QuestionGenerator.generate(levelIdx);
+        this.currentQuestion = QuestionGenerator.generate(levelIdx, this.mode);
+        this.textQuestionPrompt.innerHTML = this.currentQuestion.prompt || DEFAULT_PROMPT;
         this.selectedOptionIdx = null;
         this.isLocked = false;
         this.btnLockIn.disabled = true;
@@ -1625,6 +2010,7 @@
             this.animateFlyingAnswer(sourceBtn, targetRow, () => {
               if (this.currentLevel >= 14) {
                 audio.playWin();
+                this.onWin();
                 this.fireworks.start();
                 this.modalWin.classList.remove('hidden');
               } else {
@@ -1743,6 +2129,9 @@
           ruleMessage += "\n\nNotice that square corner marker? That means that angle is a right angle and equals 90 degrees!";
         }
 
+        if (q.hint) {
+          ruleMessage = q.hint + (hasRightAngle ? "\n\nNotice that square corner marker? That means that angle is a right angle and equals 90 degrees!" : "");
+        }
         const fullText = `"Hey there! Need help?\n\n${ruleMessage}"`;
 
         let i = 0;
@@ -1753,6 +2142,55 @@
           i++;
           if (i >= fullText.length) clearInterval(timer);
         }, 22);
+      }
+
+      getSelectedMode() {
+        const r = document.querySelector('input[name="gameMode"]:checked');
+        return r ? r.value : 'standard';
+      }
+
+      updateModeSelect() {
+        const chosen = this.getSelectedMode();
+        const base = 'cursor-pointer select-none rounded-xl border-2 py-2.5 px-2 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider transition ';
+        const off = 'border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800';
+        const easy = chosen === 'standard';
+        document.getElementById('lblModeEasy').className = base + (easy ? 'border-emerald-400 bg-emerald-500/15 text-emerald-300' : off);
+        document.getElementById('lblModeHard').className = base + (!easy ? 'border-rose-500 bg-rose-500/15 text-rose-300' : off);
+        document.getElementById('iconModeEasy').className = easy ? 'fa-solid fa-square-check' : 'fa-regular fa-square';
+        document.getElementById('iconModeHard').className = !easy ? 'fa-solid fa-square-check' : 'fa-regular fa-square';
+        document.getElementById('modeDesc').textContent = easy
+          ? 'Classic angle questions: opposite angles, straight lines and points.'
+          : 'Tough angle puzzles, then ratio questions around a point and in quadrilaterals.';
+      }
+
+      setMode(mode) {
+        this.mode = mode;
+        document.getElementById('hardBadge').classList.toggle('hidden', mode !== 'hard');
+        this.restart();
+      }
+
+      onWin() {
+        const title = document.getElementById('textWinTitle');
+        const sub = document.getElementById('textWinSub');
+        if (this.mode === 'hard') {
+          title.textContent = 'MILLIONANGLE MASTER!';
+          sub.textContent = 'You conquered Hard Mode: ratios, quadrilaterals and all!';
+        } else {
+          title.textContent = 'MILLIONANGLE!';
+          sub.textContent = 'You conquered all 15 angle geometry tiers!';
+        }
+      }
+
+jumpTo(mode, n) {
+        n = Math.max(1, Math.min(15, n || 1));
+        if (this.mode !== mode) this.setMode(mode);
+        const radio = document.querySelector(`input[name="gameMode"][value="${mode}"]`);
+        if (radio) { radio.checked = true; this.updateModeSelect(); }
+        [this.modalAudience, this.modalPhone, this.modalGameOver, this.modalWin, this.modalRules, this.modalLeaderboard]
+          .forEach(m => m.classList.add('hidden'));
+        this.fireworks.stop();
+        this.screenHome.classList.add('hidden');
+        this.loadQuestion(n - 1);
       }
 
       restart() {
@@ -1769,6 +2207,10 @@
     // Initialize Game on Window Load
     window.onload = () => {
       window.app = new MillionaireGame();
+      // Optional: open the page with ?jump=hard11 to start straight on that question
+      const jump = new URLSearchParams(location.search).get('jump');
+      const jm = jump && jump.toLowerCase().match(/^(hard|easy)(\d{1,2})$/);
+      if (jm) window.app.jumpTo(jm[1] === 'hard' ? 'hard' : 'standard', parseInt(jm[2], 10));
     };
   </script>
 </body>
