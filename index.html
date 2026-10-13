@@ -1752,11 +1752,13 @@
           ctx.lineWidth = isTarget ? 3.5 : 2.5;
           ctx.stroke();
 
-          const bR = isTarget ? 17 : 18;
-          const half = Math.abs(diff) / 2;
-          const dist = Math.min(110, Math.max(r + 18, bR / Math.sin(Math.max(half, 0.2)) + 4));
-          const mid = a1 + diff / 2;
-          const lx = p.x + dist * Math.cos(mid), ly = p.y + dist * Math.sin(mid);
+const bR = isTarget ? 17 : 18;
+const half = Math.abs(diff) / 2;
+// Increase offset distance for target '?' badge to keep it clear of adjacent geometry lines
+const extraOffset = isTarget ? 16 : 0;
+const dist = Math.min(120, Math.max(r + 22 + extraOffset, bR / Math.sin(Math.max(half, 0.25)) + 6 + extraOffset));
+const mid = a1 + diff / 2;
+const lx = p.x + dist * Math.cos(mid), ly = p.y + dist * Math.sin(mid);
 
           ctx.beginPath();
           ctx.arc(lx, ly, bR, 0, Math.PI * 2);
