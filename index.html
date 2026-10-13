@@ -320,7 +320,7 @@
       <!-- Action Buttons -->
       <div class="w-full space-y-3 pt-2">
         <div class="space-y-1.5">
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-3 gap-2">
             <label id="lblModeEasy">
               <input type="radio" name="gameMode" value="standard" class="sr-only" checked>
               <i id="iconModeEasy" class="fa-solid fa-square-check"></i>
@@ -330,6 +330,11 @@
               <input type="radio" name="gameMode" value="hard" class="sr-only">
               <i id="iconModeHard" class="fa-regular fa-square"></i>
               <span>Hard Mode</span>
+            </label>
+            <label id="lblModeExtreme">
+              <input type="radio" name="gameMode" value="extreme" class="sr-only">
+              <i id="iconModeExtreme" class="fa-regular fa-square"></i>
+              <span>Extreme</span>
             </label>
           </div>
           <p id="modeDesc" class="text-[11px] text-slate-400 font-medium"></p>
@@ -372,6 +377,7 @@
         <i class="fa-solid fa-shapes text-amber-400 text-lg"></i>
         <span class="text-xs sm:text-sm font-black tracking-widest text-amber-400 uppercase">Millionangle</span>
         <span id="hardBadge" class="hidden px-1.5 py-0.5 rounded bg-rose-600 text-white text-[9px] font-black tracking-wider">HARD</span>
+        <span id="extremeBadge" class="hidden px-1.5 py-0.5 rounded bg-fuchsia-600 text-white text-[9px] font-black tracking-wider">EXTREME</span>
       </div>
 
       <div class="flex items-center gap-2">
@@ -506,6 +512,10 @@
           <span class="font-bold text-amber-400">4. Square Corner Symbol</span>
           <p>A square symbol indicates a Right Angle (<strong class="text-white">90°</strong>).</p>
         </div>
+        <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+          <span class="font-bold text-amber-400">5. Equal Sides (Extreme Mode)</span>
+          <p>Sides with the same tick marks are equal in length. That makes triangles <strong class="text-white">isosceles</strong> (two equal angles) or <strong class="text-white">equilateral</strong> (all angles 60°).</p>
+        </div>
       </div>
 
       <button id="btnOKRules" class="w-full py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs uppercase rounded-xl transition shadow">
@@ -524,6 +534,17 @@
         <button id="btnCloseLeaderboard" class="text-slate-400 hover:text-white font-bold text-sm">✕</button>
       </div>
 
+      <div class="flex items-center justify-between gap-2">
+        <div id="lbFilters" class="flex gap-1.5">
+          <button data-lbfilter="standard" class="px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition">Easy</button>
+          <button data-lbfilter="hard" class="px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition">Hard</button>
+          <button data-lbfilter="extreme" class="px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition">Extreme</button>
+        </div>
+        <button id="btnRefreshLeaderboard" title="Refresh" class="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-lg text-xs transition">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+      </div>
+
       <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden max-h-64 overflow-y-auto">
         <table class="w-full text-left text-xs">
           <thead class="bg-slate-900 text-amber-400 font-bold border-b border-slate-800">
@@ -539,6 +560,7 @@
           </tbody>
         </table>
       </div>
+      <p id="leaderboardStatus" class="text-[10px] text-slate-500 font-medium text-center"></p>
 
       <button id="btnOKLeaderboard" class="w-full py-2 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase rounded-xl transition shadow">
         Close
@@ -628,8 +650,9 @@
 
       <!-- Text Entry Box for Leaderboard -->
       <div class="text-left space-y-1">
-        <label class="text-[11px] font-bold text-slate-300">Enter Your Name for Leaderboard:</label>
-        <input id="inputGameOverName" type="text" maxlength="16" placeholder="Your Name" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400 font-mono">
+        <label class="text-[11px] font-bold text-slate-300">Enter your first name or a nickname for the leaderboard:</label>
+        <input id="inputGameOverName" type="text" maxlength="16" placeholder="First name or nickname" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400 font-mono">
+        <p id="nameErrorGameOver" class="hidden text-[11px] font-bold text-rose-400 pt-1"></p>
       </div>
 
       <div class="flex gap-2">
@@ -664,8 +687,9 @@
 
       <!-- Text Entry Box for Leaderboard -->
       <div class="text-left space-y-1">
-        <label class="text-[11px] font-bold text-amber-300">Enter Champion Name:</label>
-        <input id="inputWinName" type="text" maxlength="16" placeholder="Champion Name" class="w-full px-3 py-2 bg-slate-950 border border-amber-500/50 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400 font-mono">
+        <label class="text-[11px] font-bold text-amber-300">Enter your first name or a nickname:</label>
+        <input id="inputWinName" type="text" maxlength="16" placeholder="First name or nickname" class="w-full px-3 py-2 bg-slate-950 border border-amber-500/50 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400 font-mono">
+        <p id="nameErrorWin" class="hidden text-[11px] font-bold text-rose-400 pt-1"></p>
       </div>
 
       <div class="flex gap-2">
@@ -850,6 +874,7 @@
    class QuestionGenerator {
       static generate(levelIdx, mode = 'standard') {
         if (mode === 'hard') return this.generateHard(levelIdx);
+        if (mode === 'extreme') return this.generateExtreme(levelIdx);
         if (levelIdx <= 3) {
           return this.generateVerticallyOpposite(levelIdx);
         } else if (levelIdx <= 8) {
@@ -1326,6 +1351,237 @@
         return this.generateRatioAroundPoint(7);
       }
 
+      // ======================= EXTREME MODE GENERATORS =======================
+      // Q1-3: equilateral + isosceles triangles sharing a side
+      // Q4-6: two triangles meeting at a point (vertically opposite angles)
+      // Q7-9: quadrilateral (with a right angle) joined to an isosceles triangle
+      // Q10-12: triangle + quadrilateral joined by vertically opposite angles (scalene / isosceles / equilateral)
+      // Q13-15: as Q10-12 plus an isosceles triangle stuck onto the quadrilateral
+      static generateExtreme(levelIdx) {
+        if (levelIdx <= 2) return this.extremeEquiIsoPair();
+        if (levelIdx <= 5) return this.extremeBowtie();
+        if (levelIdx <= 8) return this.extremeQuadCap();
+        if (levelIdx <= 11) return this.extremeBowtieQuad(['scalene', 'isosceles', 'equilateral'][levelIdx - 9], false);
+        return this.extremeBowtieQuad(['scalene', 'isosceles', 'equilateral'][Math.floor(Math.random() * 3)], true);
+      }
+
+      static D2R(d) { return d * Math.PI / 180; }
+      static rnd(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+
+      // Randomly reflects and rotates a figure, then packages it as a question.
+      static extremePack(points, segs, fills, marks, target, hint, errs, lines) {
+        const flip = Math.random() < 0.5 ? -1 : 1;
+        const th = Math.random() * Math.PI * 2;
+        const c = Math.cos(th), s = Math.sin(th);
+        const pts = points.map(p => ({ x: p.x * flip * c - p.y * s, y: p.x * flip * s + p.y * c }));
+        return {
+          kind: 'poly',
+          targetValue: target,
+          points: pts,
+          segments: segs,
+          fills: fills,
+          marks: marks,
+          lines: lines || [],
+          sectors: [],
+          hint: hint,
+          prompt: `Find the size of the angle marked <span class="text-amber-400 text-base sm:text-lg font-black">'?'</span> . Tick marks show sides of equal length.`,
+          choices: this.hardChoices(target, errs)
+        };
+      }
+
+      static outwardApex(P, i, j, refPts, baseAngle) {
+        // Apex of an isosceles triangle built on side P[i]P[j], pointing away from refPts' centroid.
+        const mx = (P[i].x + P[j].x) / 2, my = (P[i].y + P[j].y) / 2;
+        const ex = P[j].x - P[i].x, ey = P[j].y - P[i].y;
+        const len = Math.hypot(ex, ey);
+        let nx = -ey / len, ny = ex / len;
+        const cx = refPts.reduce((a, p) => a + p.x, 0) / refPts.length;
+        const cy = refPts.reduce((a, p) => a + p.y, 0) / refPts.length;
+        if (nx * (mx - cx) + ny * (my - cy) < 0) { nx = -nx; ny = -ny; }
+        const h = (len / 2) * Math.tan(this.D2R(baseAngle));
+        return { x: mx + nx * h, y: my + ny * h };
+      }
+
+      static extremeEquiIsoPair() {
+        const b = this.rnd(25, 70);
+        const tb = Math.tan(this.D2R(b));
+        // 0=A 1=C 2=B (apex of equilateral) 3=D (apex of isosceles)
+        const pts = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 0.5, y: -Math.sqrt(3) / 2 }, { x: 0.5, y: 0.5 * tb }];
+        const segs = [{ a: 0, b: 1, t: 1 }, { a: 0, b: 2, t: 1 }, { a: 2, b: 1, t: 1 }, { a: 0, b: 3, t: 2 }, { a: 3, b: 1, t: 2 }];
+        const marks = [{ v: 0, p1: 1, p2: 3, val: b, type: 'given' }];
+        const pick = this.rnd(0, 2);
+        let target, errs, hint;
+        if (pick === 0) {
+          target = 180 - 2 * b;
+          marks.push({ v: 3, p1: 0, p2: 1, val: target, type: 'target' });
+          errs = [b, 2 * b, 180 - b, 60 + b];
+          hint = "The isosceles triangle has two equal sides, so its two base angles are equal. Angles in a triangle add up to 180 degrees!";
+        } else if (pick === 1) {
+          target = 60 + b;
+          marks.push({ v: 0, p1: 2, p2: 3, val: target, type: 'target' });
+          errs = [b, 60, 120 - b, 180 - b];
+          hint = "Every angle in an equilateral triangle is 60 degrees. The big angle is made of the 60 degrees plus the given angle!";
+        } else {
+          target = 60 + b;
+          marks.push({ v: 1, p1: 2, p2: 3, val: target, type: 'target' });
+          errs = [b, 60, 120 - b, 2 * b];
+          hint = "The isosceles triangle has equal base angles, so the given angle also appears at the other end. Add the 60 degrees from the equilateral triangle!";
+        }
+        return this.extremePack(pts, segs, [[0, 1, 2], [0, 1, 3]], marks, target, hint, errs);
+      }
+
+      static extremeBowtie() {
+        const phiRad = p => this.D2R(p);
+        if (Math.random() < 0.5) {
+          // Scalene triangle given; opposite triangle is isosceles (OC = OD). Find a base angle.
+          let a, b;
+          do { a = this.rnd(25, 90); b = this.rnd(25, 90); } while ((a + b) % 2 !== 0 || a + b > 150);
+          const phi = 180 - a - b;
+          const u2 = { x: Math.cos(phiRad(phi)), y: Math.sin(phiRad(phi)) };
+          const OA = Math.sin(phiRad(b)), OB = Math.sin(phiRad(a));
+          const r = 0.85 * (OA + OB) / 2;
+          // 0=O 1=A 2=B 3=C 4=D
+          const pts = [{ x: 0, y: 0 }, { x: OA, y: 0 }, { x: u2.x * OB, y: u2.y * OB }, { x: -r, y: 0 }, { x: -u2.x * r, y: -u2.y * r }];
+          const segs = [{ a: 0, b: 1, t: 0 }, { a: 0, b: 2, t: 0 }, { a: 0, b: 3, t: 1 }, { a: 0, b: 4, t: 1 }, { a: 1, b: 2, t: 0 }, { a: 3, b: 4, t: 0 }];
+          const target = (a + b) / 2;
+          const marks = [
+            { v: 1, p1: 0, p2: 2, val: a, type: 'given' },
+            { v: 2, p1: 0, p2: 1, val: b, type: 'given' },
+            { v: 3, p1: 0, p2: 4, val: target, type: 'target' }
+          ];
+          return this.extremePack(pts, segs, [[0, 1, 2], [0, 3, 4]], marks, target,
+            "Find the angle at the centre of the first triangle (angles in a triangle add to 180). Vertically opposite angles are equal, so the other triangle has the same angle there. The tick marks mean it is isosceles, so share the rest equally!",
+            [a + b, phi, a, b], [[1, 0, 3], [2, 0, 4]]);
+        }
+        // Isosceles triangle given (one base angle); opposite triangle is scalene with one angle given.
+        const a = this.rnd(30, 75);
+        const phi = 180 - 2 * a;
+        const c = this.rnd(25, 2 * a - 25);
+        const d = 2 * a - c;
+        const u2 = { x: Math.cos(phiRad(phi)), y: Math.sin(phiRad(phi)) };
+        const OD = Math.sin(phiRad(c)) / Math.sin(phiRad(d));
+        const pts = [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: u2.x, y: u2.y }, { x: -1, y: 0 }, { x: -u2.x * OD, y: -u2.y * OD }];
+        const segs = [{ a: 0, b: 1, t: 1 }, { a: 0, b: 2, t: 1 }, { a: 0, b: 3, t: 0 }, { a: 0, b: 4, t: 0 }, { a: 1, b: 2, t: 0 }, { a: 3, b: 4, t: 0 }];
+        const marks = [
+          { v: 1, p1: 0, p2: 2, val: a, type: 'given' },
+          { v: 3, p1: 0, p2: 4, val: c, type: 'given' },
+          { v: 4, p1: 0, p2: 3, val: d, type: 'target' }
+        ];
+        return this.extremePack(pts, segs, [[0, 1, 2], [0, 3, 4]], marks, d,
+          "The tick marks show the first triangle is isosceles, so both base angles are equal. Find its angle at the centre, then use vertically opposite angles to carry it across to the other triangle!",
+          [2 * a, phi, c, a], [[1, 0, 3], [2, 0, 4]]);
+      }
+
+      static extremeQuadCap() {
+        for (let attempt = 0; attempt < 400; attempt++) {
+          const q1 = this.rnd(65, 110), q2 = this.rnd(65, 110);
+          const q3 = 270 - q1 - q2;
+          const b = this.rnd(20, 45);
+          if (q3 < 50 || q3 > 140 || q2 + b > 170 || q3 + b > 170) continue;
+          const V = this.buildQuadVertices([90, q1, q2, q3]);
+          if (!V) continue;
+          const E = this.outwardApex(V, 2, 3, V, b);
+          const pts = [V[0], V[1], V[2], V[3], E];
+          const segs = [{ a: 0, b: 1, t: 0 }, { a: 1, b: 2, t: 0 }, { a: 2, b: 3, t: 0 }, { a: 3, b: 0, t: 0 }, { a: 2, b: 4, t: 2 }, { a: 3, b: 4, t: 2 }];
+          const target = q3 + b;
+          const marks = [
+            { v: 0, p1: 1, p2: 3, val: 90, type: 'right' },
+            { v: 1, p1: 0, p2: 2, val: q1, type: 'given' },
+            { v: 2, p1: 1, p2: 3, val: q2, type: 'given' },
+            { v: 2, p1: 3, p2: 4, val: b, type: 'given' },
+            { v: 3, p1: 0, p2: 4, val: target, type: 'target' }
+          ];
+          return this.extremePack(pts, segs, [[0, 1, 2, 3], [2, 4, 3]], marks, target,
+            "Angles in a quadrilateral add up to 360 degrees (the square marker means 90). Find the missing quadrilateral angle first. The isosceles triangle has equal base angles, so add that base angle on too!",
+            [q3, 180 - target, 360 - q1 - q2 - b, 270 - q1 - q2 - b]);
+        }
+        return this.extremeEquiIsoPair();
+      }
+
+      static extremeBowtieQuad(type, withCap) {
+        const sin = d => Math.sin(this.D2R(d));
+        for (let attempt = 0; attempt < 600; attempt++) {
+          let phi, a = 0, b = 0;
+          if (type === 'scalene') { phi = this.rnd(50, 110); a = this.rnd(25, 155 - phi); b = 180 - phi - a; }
+          else if (type === 'isosceles') { a = this.rnd(35, 70); b = a; phi = 180 - 2 * a; }
+          else { phi = 60; }
+
+          let c, d, g = 0, target, targetIsC;
+          if (withCap) {
+            d = this.rnd(55, 125); c = 270 - phi - d;
+            if (c < 50 || c > 130) continue;
+            g = this.rnd(20, 40);
+            if (c + g > 170) continue;
+            target = c + g; targetIsC = true;
+          } else {
+            const given = this.rnd(55, 125);
+            const other = 270 - phi - given;
+            if (other < 50 || other > 135) continue;
+            targetIsC = Math.random() < 0.5;
+            if (targetIsC) { d = given; c = other; target = c; } else { c = given; d = other; target = d; }
+          }
+
+          const V = this.buildQuadVertices([phi, c, 90, d]);
+          if (!V) continue;
+          const O = V[0], C = V[1], E = V[2], D = V[3];
+          const lOC = Math.hypot(C.x - O.x, C.y - O.y), lOD = Math.hypot(D.x - O.x, D.y - O.y);
+          const avg = (lOC + lOD) / 2;
+          const uC = { x: (C.x - O.x) / lOC, y: (C.y - O.y) / lOC };
+          const uD = { x: (D.x - O.x) / lOD, y: (D.y - O.y) / lOD };
+          let OA, OB;
+          if (type === 'scalene') {
+            const k = 0.85 * avg / ((sin(a) + sin(b)) / 2);
+            OA = k * sin(b); OB = k * sin(a);
+          } else { OA = OB = 0.85 * avg; }
+          const A = { x: O.x - uC.x * OA, y: O.y - uC.y * OA };
+          const B = { x: O.x - uD.x * OB, y: O.y - uD.y * OB };
+
+          // 0=O 1=C 2=E 3=D 4=A 5=B 6=F(cap apex)
+          const pts = [O, C, E, D, A, B];
+          const tri = type === 'scalene' ? 0 : 1;
+          const segs = [
+            { a: 0, b: 4, t: tri }, { a: 0, b: 5, t: tri },
+            { a: 0, b: 1, t: 0 }, { a: 0, b: 3, t: 0 },
+            { a: 4, b: 5, t: type === 'equilateral' ? 1 : 0 },
+            { a: 1, b: 2, t: 0 }, { a: 2, b: 3, t: 0 }
+          ];
+          const fills = [[0, 1, 2, 3], [0, 4, 5]];
+          const marks = [{ v: 2, p1: 1, p2: 3, val: 90, type: 'right' }];
+          if (type === 'scalene') {
+            marks.push({ v: 4, p1: 0, p2: 5, val: a, type: 'given' });
+            marks.push({ v: 5, p1: 0, p2: 4, val: b, type: 'given' });
+          } else if (type === 'isosceles') {
+            marks.push({ v: 4, p1: 0, p2: 5, val: a, type: 'given' });
+          }
+
+          let errs, hint;
+          const triHint = type === 'scalene'
+            ? "Angles in a triangle add up to 180 degrees, so find the angle at the centre first."
+            : type === 'isosceles'
+              ? "The tick marks show the triangle is isosceles, so both base angles are equal. Find the angle at the centre."
+              : "The tick marks show the triangle is equilateral, so every angle in it is 60 degrees.";
+          if (withCap) {
+            const F = this.outwardApex(pts, 1, 2, [O, C, E, D], g);
+            pts.push(F);
+            segs.push({ a: 1, b: 6, t: 2 }, { a: 2, b: 6, t: 2 });
+            fills.push([1, 6, 2]);
+            marks.push({ v: 1, p1: 0, p2: 6, val: target, type: 'target' });
+            marks.push({ v: 3, p1: 0, p2: 2, val: d, type: 'given' });
+            marks.push({ v: 2, p1: 1, p2: 6, val: g, type: 'given' });
+            errs = [c, 270 - d, 360 - phi - d, 180 - phi];
+            hint = triHint + " Vertically opposite angles are equal, so the quadrilateral has the same angle at the centre. Angles in a quadrilateral add to 360 (the square is 90). The small isosceles triangle has equal base angles, so add its base angle at the end!";
+          } else {
+            const given = targetIsC ? d : c;
+            marks.push({ v: 1, p1: 0, p2: 2, val: c, type: targetIsC ? 'target' : 'given' });
+            marks.push({ v: 3, p1: 0, p2: 2, val: d, type: targetIsC ? 'given' : 'target' });
+            errs = [270 - given, 360 - phi - given, 180 - phi, phi];
+            hint = triHint + " Vertically opposite angles are equal, so the quadrilateral has the same angle at the centre. Angles in a quadrilateral add to 360 (the square is 90)!";
+          }
+          return this.extremePack(pts, segs, fills, marks, target, hint, errs, [[4, 0, 1], [5, 0, 3]]);
+        }
+        return this.extremeEquiIsoPair();
+      }
+
       static buildChoices(correctVal, distractorPool) {
         const pool = new Set();
         pool.add(correctVal);
@@ -1407,6 +1663,117 @@
         ctx.fillText(text, this.width / 2, 26);
       }
 
+      drawPoly(problem) {
+        const ctx = this.ctx;
+        const w = this.width, h = this.height;
+        ctx.clearRect(0, 0, w, h);
+        const pts = problem.displayPoints || problem.points;
+        const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        const margin = 46;
+        const scale = Math.min((w - 2 * margin) / (maxX - minX || 1), (h - 2 * margin) / (maxY - minY || 1));
+        const ox = w / 2 - ((minX + maxX) / 2) * scale;
+        const oy = h / 2 - ((minY + maxY) / 2) * scale;
+        const P = pts.map(p => ({ x: ox + p.x * scale, y: oy + p.y * scale }));
+
+        // Shaded regions
+        (problem.fills || []).forEach(f => {
+          ctx.beginPath();
+          f.forEach((i, k) => (k === 0 ? ctx.moveTo(P[i].x, P[i].y) : ctx.lineTo(P[i].x, P[i].y)));
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.07)';
+          ctx.fill();
+        });
+
+        // Segments
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = '#94a3b8';
+        problem.segments.forEach(s => {
+          ctx.beginPath();
+          ctx.moveTo(P[s.a].x, P[s.a].y);
+          ctx.lineTo(P[s.b].x, P[s.b].y);
+          ctx.stroke();
+        });
+
+        // Equal-side tick marks
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2.5;
+        problem.segments.forEach(s => {
+          if (!s.t) return;
+          const dx = P[s.b].x - P[s.a].x, dy = P[s.b].y - P[s.a].y;
+          const len = Math.hypot(dx, dy);
+          const ux = dx / len, uy = dy / len, nx = -uy, ny = ux;
+          const mx = (P[s.a].x + P[s.b].x) / 2, my = (P[s.a].y + P[s.b].y) / 2;
+          for (let i = 0; i < s.t; i++) {
+            const off = (i - (s.t - 1) / 2) * 6;
+            const cx = mx + ux * off, cy = my + uy * off;
+            ctx.beginPath();
+            ctx.moveTo(cx - nx * 8, cy - ny * 8);
+            ctx.lineTo(cx + nx * 8, cy + ny * 8);
+            ctx.stroke();
+          }
+        });
+
+        // Vertex dots
+        ctx.fillStyle = '#94a3b8';
+        P.forEach(p => { ctx.beginPath(); ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2); ctx.fill(); });
+
+        // Angle marks
+        problem.marks.forEach(m => {
+          const p = P[m.v], q1 = P[m.p1], q2 = P[m.p2];
+          const a1 = Math.atan2(q1.y - p.y, q1.x - p.x);
+          const a2 = Math.atan2(q2.y - p.y, q2.x - p.x);
+          let diff = a2 - a1;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff <= -Math.PI) diff += Math.PI * 2;
+          const l1 = Math.hypot(q1.x - p.x, q1.y - p.y), l2 = Math.hypot(q2.x - p.x, q2.y - p.y);
+          const minL = Math.min(l1, l2);
+
+          if (m.type === 'right') {
+            const s = Math.max(12, Math.min(20, minL * 0.25));
+            const u1 = { x: Math.cos(a1), y: Math.sin(a1) }, u2 = { x: Math.cos(a2), y: Math.sin(a2) };
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(p.x + u1.x * s, p.y + u1.y * s);
+            ctx.lineTo(p.x + (u1.x + u2.x) * s, p.y + (u1.y + u2.y) * s);
+            ctx.lineTo(p.x + u2.x * s, p.y + u2.y * s);
+            ctx.stroke();
+            return;
+          }
+
+          const isTarget = m.type === 'target';
+          const r = Math.max(14, Math.min(30, minL * 0.28)) + (isTarget ? 5 : 0);
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, a1, a2, diff < 0);
+          ctx.strokeStyle = isTarget ? '#f59e0b' : '#38bdf8';
+          ctx.lineWidth = isTarget ? 3.5 : 2.5;
+          ctx.stroke();
+
+          const bR = isTarget ? 17 : 18;
+          const half = Math.abs(diff) / 2;
+          const dist = Math.min(110, Math.max(r + 18, bR / Math.sin(Math.max(half, 0.2)) + 4));
+          const mid = a1 + diff / 2;
+          const lx = p.x + dist * Math.cos(mid), ly = p.y + dist * Math.sin(mid);
+
+          ctx.beginPath();
+          ctx.arc(lx, ly, bR, 0, Math.PI * 2);
+          ctx.fillStyle = isTarget ? 'rgba(245, 158, 11, 0.35)' : 'rgba(15, 23, 42, 0.92)';
+          ctx.fill();
+          ctx.strokeStyle = isTarget ? '#facc15' : '#38bdf8';
+          ctx.lineWidth = isTarget ? 2 : 1.5;
+          ctx.stroke();
+
+          ctx.fillStyle = isTarget ? '#fef08a' : '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.font = isTarget ? '900 20px Inter, sans-serif' : '800 13px "Roboto Mono", monospace';
+          ctx.fillText(isTarget ? '?' : `${m.val}°`, lx, ly + 1);
+        });
+      }
+
       drawQuad(problem) {
         const ctx = this.ctx;
         const w = this.width;
@@ -1414,7 +1781,7 @@
         ctx.clearRect(0, 0, w, h);
         this.drawBanner(problem.banner);
 
-        const V = problem.vertices;
+        const V = problem.displayVertices || problem.vertices;
         const xs = V.map(p => p.x), ys = V.map(p => p.y);
         const minX = Math.min(...xs), maxX = Math.max(...xs);
         const minY = Math.min(...ys), maxY = Math.max(...ys);
@@ -1491,6 +1858,7 @@
       draw(problem) {
         this.currentProblem = problem;
         if (problem.kind === 'quad') { this.drawQuad(problem); return; }
+        if (problem.kind === 'poly') { this.drawPoly(problem); return; }
         const ctx = this.ctx;
         const w = this.width;
         const h = this.height;
@@ -1509,16 +1877,17 @@
         ctx.arc(centerX, centerY, 6, 0, Math.PI * 2);
         ctx.fill();
 
-        const rays = problem.rays;
+        const rays = problem.displayRays || problem.rays;
 
         // 1. Draw Rays
         ctx.lineWidth = 3;
         ctx.strokeStyle = '#94a3b8';
 
-        rays.forEach(deg => {
+        rays.forEach((deg, ri) => {
           const rad = deg * Math.PI / 180;
-          const rx = centerX + rayLength * Math.cos(rad);
-          const ry = centerY + rayLength * Math.sin(rad);
+          const rl = rayLength * (problem.displayRayLens ? problem.displayRayLens[ri] : 1);
+          const rx = centerX + rl * Math.cos(rad);
+          const ry = centerY + rl * Math.sin(rad);
 
           ctx.beginPath();
           ctx.moveTo(centerX, centerY);
@@ -1714,6 +2083,44 @@
     /* ==========================================================================
        MAIN GAME & LEADERBOARD CONTROLLER
        ========================================================================== */
+    /* ==========================================================================
+       SHARED LEADERBOARD CONFIG
+       Paste your Google Apps Script web app URL (ends in /exec) between the quotes.
+       Leave it empty to keep a private leaderboard on each device.
+       ========================================================================== */
+    const LEADERBOARD_URL = 'https://script.google.com/macros/s/AKfycbxFsPG5RE3qDwgW9_c61lMLaBztmsrorY668quWU-vi5M2X1OBeSeWzuY0wDNBKK_WK/exec';
+
+    const NAME_BLOCK_CONTAINS = ["fuck", "shit", "bitch", "cunt", "nigg", "fagg", "whore", "slut", "porn", "penis", "vagina", "bastard", "dickhead", "wank", "pussy"];
+    const NAME_BLOCK_EXACT = ["dick", "ass", "arse", "piss", "sex", "fag", "tit", "tits", "cock", "crap", "damn", "boob", "boobs", "nazi"];
+
+    // Returns an error message if the name isn't allowed, otherwise ''.
+    function nameProblem(name) {
+      const n = (name || '').trim();
+      if (!n) return 'Please enter a first name or nickname.';
+      const map = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '$': 's', '@': 'a', '!': 'i' };
+      const norm = n.toLowerCase().replace(/[01345$@!]/g, c => map[c]);
+      const letters = norm.replace(/[^a-z]/g, '');
+      if (NAME_BLOCK_CONTAINS.some(w => letters.indexOf(w) !== -1) || norm.split(/[^a-z]+/).some(t => NAME_BLOCK_EXACT.includes(t))) {
+        return 'Please choose a different name. First names or nicknames only!';
+      }
+      return '';
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    async function lbFetch(url, ms = 8000) {
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), ms);
+      try {
+        const res = await fetch(url, { signal: ctl.signal, redirect: 'follow' });
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     const DEFAULT_PROMPT = `What is the value of missing angle <span class="text-amber-400 text-base sm:text-lg font-black">'?'</span> ?`;
 
     class MillionaireGame {
@@ -1735,6 +2142,9 @@
         this.renderer = new GeometryCanvasRenderer('geometryCanvas');
         this.fireworks = new FireworksEngine('fireworksCanvas');
 
+        this.lbFilter = 'standard';
+        this.lbEntries = null;
+        this.lbSendFailed = false;
         this.initLeaderboard();
         this.initDOM();
         this.initEvents();
@@ -1775,7 +2185,8 @@
           prize: tier.formatted,
           amount: tier.amount,
           date: formattedDate,
-          hard: this.mode === 'hard'
+          hard: this.mode === 'hard',
+          mode: this.mode
         });
 
         entries.sort((a, b) => b.amount - a.amount);
@@ -1783,23 +2194,127 @@
         this.renderLeaderboardTable();
       }
 
+      modeOfEntry(item) {
+        return item.mode || (item.hard ? 'hard' : 'standard');
+      }
+
+      modeLabel(m) {
+        return { standard: 'Easy', hard: 'Hard', extreme: 'Extreme' }[m] || m;
+      }
+
+      formatLbDate(d) {
+        if (typeof d === 'string' && d.indexOf('T') !== -1) {
+          const dt = new Date(d);
+          if (!isNaN(dt)) return dt.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+        return d || '';
+      }
+
+      setLbStatus(text) {
+        const el = document.getElementById('leaderboardStatus');
+        if (el) el.textContent = text;
+      }
+
+      updateLbFilterUI() {
+        document.querySelectorAll('[data-lbfilter]').forEach(btn => {
+          const on = btn.dataset.lbfilter === this.lbFilter;
+          btn.className = 'px-2 py-1 rounded-lg border text-[10px] font-black uppercase tracking-wider transition ' +
+            (on ? 'border-amber-400 bg-amber-500/20 text-amber-300' : 'border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800');
+        });
+      }
+
       renderLeaderboardTable() {
         const body = document.getElementById('leaderboardTableBody');
         if (!body) return;
         body.innerHTML = '';
+        this.updateLbFilterUI();
 
-        const entries = this.getLeaderboard();
+        const all = this.lbEntries || this.getLeaderboard();
+        const entries = all.filter(e => this.modeOfEntry(e) === this.lbFilter).slice(0, 25);
+
+        if (!entries.length) {
+          const row = document.createElement('tr');
+          row.innerHTML = '<td colspan="4" class="p-4 text-center text-slate-500 text-[11px]">No scores yet. Be the first!</td>';
+          body.appendChild(row);
+          return;
+        }
+
         entries.forEach((item, idx) => {
           const row = document.createElement('tr');
           row.className = idx === 0 ? "bg-amber-500/10 font-bold" : "";
           row.innerHTML = `
             <td class="p-2 text-amber-400 font-bold">${idx + 1}</td>
-            <td class="p-2 text-white">${item.name}${item.hard ? ' <span class="ml-1 px-1 py-0.5 rounded bg-rose-600 text-white text-[8px] font-black align-middle">HARD</span>' : ''}</td>
-            <td class="p-2 text-right text-amber-400 font-bold">${item.prize}</td>
-            <td class="p-2 text-right text-slate-400 text-[10px]">${item.date}</td>
+            <td class="p-2 text-white">${escapeHtml(item.name)}</td>
+            <td class="p-2 text-right text-amber-400 font-bold">${escapeHtml(item.prize)}</td>
+            <td class="p-2 text-right text-slate-400 text-[10px]">${escapeHtml(this.formatLbDate(item.date))}</td>
           `;
           body.appendChild(row);
         });
+      }
+
+      async openLeaderboard() {
+        this.modalLeaderboard.classList.remove('hidden');
+        this.updateLbFilterUI();
+        const body = document.getElementById('leaderboardTableBody');
+
+        if (!LEADERBOARD_URL) {
+          this.lbEntries = null;
+          this.renderLeaderboardTable();
+          this.setLbStatus('Scores saved on this device only.');
+          return;
+        }
+
+        const token = (this.lbToken = (this.lbToken || 0) + 1);
+        if (body) body.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500 text-[11px]">Loading class leaderboard...</td></tr>';
+        this.setLbStatus('');
+        try {
+          const mode = this.lbFilter;
+          const data = await lbFetch(LEADERBOARD_URL + '?mode=' + mode + '&_=' + Date.now());
+          if (!data || !data.ok || !Array.isArray(data.entries)) throw new Error('bad response');
+          if (token !== this.lbToken) return;
+          this.lbEntries = data.entries.map(e => Object.assign({}, e, { mode }));
+          this.renderLeaderboardTable();
+          const t = new Date().toLocaleTimeString('en-NZ', { hour: 'numeric', minute: '2-digit' });
+          this.setLbStatus(this.lbSendFailed
+            ? 'Your last score could not be sent to the class leaderboard.'
+            : `Class leaderboard (${this.modeLabel(mode)}) · updated ${t}`);
+        } catch (err) {
+          if (token !== this.lbToken) return;
+          this.lbEntries = null;
+          this.renderLeaderboardTable();
+          this.setLbStatus('Could not reach the class leaderboard. Showing scores from this device only.');
+        }
+      }
+
+      // Validates the name, sends the score to the shared sheet (if configured) and keeps a local copy.
+      async submitScore(rawName, levelIdx, errEl) {
+        const name = (rawName || '').trim();
+        const showError = (msg) => { if (errEl) { errEl.textContent = msg; errEl.classList.remove('hidden'); } };
+        if (errEl) errEl.classList.add('hidden');
+
+        const problem = nameProblem(name);
+        if (problem) { showError(problem); return false; }
+
+        this.lbSendFailed = false;
+        if (LEADERBOARD_URL) {
+          const tier = PRIZE_TIERS[levelIdx] || { amount: 0 };
+          const url = LEADERBOARD_URL + '?action=add&name=' + encodeURIComponent(name) +
+            '&amount=' + tier.amount + '&mode=' + encodeURIComponent(this.mode) + '&_=' + Date.now();
+          try {
+            const data = await lbFetch(url, 12000);
+            if (data && data.ok === false) {
+              showError(data.error === 'blocked' || data.error === 'name'
+                ? 'Please choose a different name. First names or nicknames only!'
+                : 'Sorry, your score could not be saved. Please try again.');
+              return false;
+            }
+            if (!data || data.ok !== true) throw new Error('bad response');
+          } catch (err) {
+            this.lbSendFailed = true;
+          }
+        }
+        this.addLeaderboardEntry(name, levelIdx);
+        return true;
       }
 
       initDOM() {
@@ -1832,6 +2347,7 @@
         // Home Screen Buttons
         this.updateModeSelect();
 
+        // Shortcut: type "next" and press Enter to skip to the next question.
         // Playtesting cheat code: type "hard11" (or "easy7", etc.) and press Enter to jump to that question.
         let cheatBuf = '';
         let cheatTimer = null;
@@ -1839,16 +2355,22 @@
           const t = e.target;
           if (t && t.tagName === 'INPUT' && t.type === 'text') return;
           if (e.key === 'Enter') {
-            const m = cheatBuf.toLowerCase().match(/^(hard|easy)(\d{1,2})$/);
+            const m = cheatBuf.toLowerCase().match(/^(hard|easy|extreme)(\d{1,2})$/);
+            const isNext = cheatBuf.toLowerCase().endsWith('next');
             cheatBuf = '';
+            if (isNext) {
+              e.preventDefault();
+              this.nextQuestion();
+              return;
+            }
             if (m) {
               e.preventDefault();
-              this.jumpTo(m[1] === 'hard' ? 'hard' : 'standard', parseInt(m[2], 10));
+              this.jumpTo(m[1] === 'easy' ? 'standard' : m[1], parseInt(m[2], 10));
             }
             return;
           }
           if (e.key && e.key.length === 1) {
-            cheatBuf = (cheatBuf + e.key).slice(-8);
+            cheatBuf = (cheatBuf + e.key).slice(-12);
             clearTimeout(cheatTimer);
             cheatTimer = setTimeout(() => { cheatBuf = ''; }, 2000);
           }
@@ -1861,15 +2383,15 @@
         });
         document.getElementById('btnHomeRules').addEventListener('click', () => this.modalRules.classList.remove('hidden'));
         document.getElementById('btnHomeLeaderboard').addEventListener('click', () => {
-          this.renderLeaderboardTable();
-          this.modalLeaderboard.classList.remove('hidden');
+          this.lbFilter = this.getSelectedMode();
+          this.openLeaderboard();
         });
 
         // Header Nav
         document.getElementById('btnHeaderHome').addEventListener('click', () => this.screenHome.classList.remove('hidden'));
         document.getElementById('btnHeaderLeaderboard').addEventListener('click', () => {
-          this.renderLeaderboardTable();
-          this.modalLeaderboard.classList.remove('hidden');
+          this.lbFilter = this.mode;
+          this.openLeaderboard();
         });
 
         // Options click
@@ -1897,25 +2419,46 @@
         document.getElementById('btnOKRules').addEventListener('click', () => this.modalRules.classList.add('hidden'));
         document.getElementById('btnCloseLeaderboard').addEventListener('click', () => this.modalLeaderboard.classList.add('hidden'));
         document.getElementById('btnOKLeaderboard').addEventListener('click', () => this.modalLeaderboard.classList.add('hidden'));
+        document.getElementById('btnRefreshLeaderboard').addEventListener('click', () => this.openLeaderboard());
+        document.querySelectorAll('[data-lbfilter]').forEach(btn => btn.addEventListener('click', () => {
+          this.lbFilter = btn.dataset.lbfilter;
+          this.openLeaderboard();
+        }));
 
         // Save Score Buttons
-        document.getElementById('btnSaveGameOverScore').addEventListener('click', () => {
-          const name = document.getElementById('inputGameOverName').value;
+        document.getElementById('btnSaveGameOverScore').addEventListener('click', async (ev) => {
+          const btn = ev.currentTarget;
+          if (btn.disabled) return;
           let safeLevel = -1;
           if (this.currentLevel >= 9) safeLevel = 9;
           else if (this.currentLevel >= 4) safeLevel = 4;
 
-          this.addLeaderboardEntry(name, safeLevel);
-          this.modalGameOver.classList.add('hidden');
-          this.modalLeaderboard.classList.remove('hidden');
+          btn.disabled = true;
+          btn.textContent = 'Saving...';
+          const ok = await this.submitScore(document.getElementById('inputGameOverName').value, safeLevel, document.getElementById('nameErrorGameOver'));
+          btn.disabled = false;
+          btn.textContent = 'Save Score';
+          if (ok) {
+            this.modalGameOver.classList.add('hidden');
+            this.lbFilter = this.mode;
+            this.openLeaderboard();
+          }
         });
 
-        document.getElementById('btnSaveWinScore').addEventListener('click', () => {
-          const name = document.getElementById('inputWinName').value;
-          this.addLeaderboardEntry(name, 14);
-          this.fireworks.stop();
-          this.modalWin.classList.add('hidden');
-          this.modalLeaderboard.classList.remove('hidden');
+        document.getElementById('btnSaveWinScore').addEventListener('click', async (ev) => {
+          const btn = ev.currentTarget;
+          if (btn.disabled) return;
+          btn.disabled = true;
+          btn.textContent = 'Saving...';
+          const ok = await this.submitScore(document.getElementById('inputWinName').value, 14, document.getElementById('nameErrorWin'));
+          btn.disabled = false;
+          btn.textContent = 'Save Score';
+          if (ok) {
+            this.fireworks.stop();
+            this.modalWin.classList.add('hidden');
+            this.lbFilter = this.mode;
+            this.openLeaderboard();
+          }
         });
 
         // Audio Toggle
@@ -2212,28 +2755,39 @@
 
       updateModeSelect() {
         const chosen = this.getSelectedMode();
-        const base = 'cursor-pointer select-none rounded-xl border-2 py-2.5 px-2 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-wider transition ';
+        const base = 'cursor-pointer select-none rounded-xl border-2 py-2.5 px-1 flex items-center justify-center gap-1.5 text-[11px] font-black uppercase tracking-wider transition ';
         const off = 'border-slate-700 bg-slate-900 text-slate-400 hover:bg-slate-800';
-        const easy = chosen === 'standard';
-        document.getElementById('lblModeEasy').className = base + (easy ? 'border-emerald-400 bg-emerald-500/15 text-emerald-300' : off);
-        document.getElementById('lblModeHard').className = base + (!easy ? 'border-rose-500 bg-rose-500/15 text-rose-300' : off);
-        document.getElementById('iconModeEasy').className = easy ? 'fa-solid fa-square-check' : 'fa-regular fa-square';
-        document.getElementById('iconModeHard').className = !easy ? 'fa-solid fa-square-check' : 'fa-regular fa-square';
-        document.getElementById('modeDesc').textContent = easy
-          ? 'Classic angle questions: opposite angles, straight lines and points.'
-          : 'Tough angle puzzles, then ratio questions around a point and in quadrilaterals.';
+        const on = {
+          standard: 'border-emerald-400 bg-emerald-500/15 text-emerald-300',
+          hard: 'border-rose-500 bg-rose-500/15 text-rose-300',
+          extreme: 'border-fuchsia-500 bg-fuchsia-500/15 text-fuchsia-300'
+        };
+        const ids = { standard: 'Easy', hard: 'Hard', extreme: 'Extreme' };
+        Object.keys(ids).forEach(k => {
+          document.getElementById('lblMode' + ids[k]).className = base + (chosen === k ? on[k] : off);
+          document.getElementById('iconMode' + ids[k]).className = chosen === k ? 'fa-solid fa-square-check' : 'fa-regular fa-square';
+        });
+        document.getElementById('modeDesc').textContent = {
+          standard: 'Classic angle questions: opposite angles, straight lines and points.',
+          hard: 'Tough angle puzzles, then ratio questions around a point and in quadrilaterals.',
+          extreme: 'Triangles and quadrilaterals combined: isosceles, equilateral, vertically opposite and right angles.'
+        }[chosen];
       }
 
       setMode(mode) {
         this.mode = mode;
         document.getElementById('hardBadge').classList.toggle('hidden', mode !== 'hard');
+        document.getElementById('extremeBadge').classList.toggle('hidden', mode !== 'extreme');
         this.restart();
       }
 
       onWin() {
         const title = document.getElementById('textWinTitle');
         const sub = document.getElementById('textWinSub');
-        if (this.mode === 'hard') {
+        if (this.mode === 'extreme') {
+          title.textContent = 'MILLIONANGLE LEGEND!';
+          sub.textContent = 'You conquered Extreme Mode: polygons, isosceles, equilaterals and all!';
+        } else if (this.mode === 'hard') {
           title.textContent = 'MILLIONANGLE MASTER!';
           sub.textContent = 'You conquered Hard Mode: ratios, quadrilaterals and all!';
         } else {
@@ -2254,6 +2808,13 @@ jumpTo(mode, n) {
         this.loadQuestion(n - 1);
       }
 
+      nextQuestion() {
+        if (this.isLocked) return;
+        if (!this.modalGameOver.classList.contains('hidden') || !this.modalWin.classList.contains('hidden')) return;
+        [this.modalAudience, this.modalPhone, this.modalRules, this.modalLeaderboard].forEach(m => m.classList.add('hidden'));
+        this.loadQuestion(Math.min(14, this.currentLevel + 1));
+      }
+
       restart() {
         this.lifelines = { fiftyFifty: false, audience: false, phone: false };
         this.btn5050.disabled = false;
@@ -2270,8 +2831,8 @@ jumpTo(mode, n) {
       window.app = new MillionaireGame();
       // Optional: open the page with ?jump=hard11 to start straight on that question
       const jump = new URLSearchParams(location.search).get('jump');
-      const jm = jump && jump.toLowerCase().match(/^(hard|easy)(\d{1,2})$/);
-      if (jm) window.app.jumpTo(jm[1] === 'hard' ? 'hard' : 'standard', parseInt(jm[2], 10));
+      const jm = jump && jump.toLowerCase().match(/^(hard|easy|extreme)(\d{1,2})$/);
+      if (jm) window.app.jumpTo(jm[1] === 'easy' ? 'standard' : jm[1], parseInt(jm[2], 10));
     };
   </script>
 </body>
